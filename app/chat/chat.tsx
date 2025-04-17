@@ -1,4 +1,5 @@
 import { GetChatList } from "api/chat";
+import { Button } from "~/components/ui/button";
 import { useAsyncEffect } from "~/hooks/useAsyncEffect";
 
 const Chat = () => {
@@ -8,7 +9,12 @@ const Chat = () => {
     });
   }, []);
 
-  return <div>Main Chat Page</div>;
+  return (
+    <div>
+      Main Chat Page
+      <Button>This is a button</Button>
+    </div>
+  );
 };
 
 export default Chat;
