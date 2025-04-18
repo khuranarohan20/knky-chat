@@ -10,7 +10,7 @@ const ChatBubbles = () => {
   }
 
   return (
-    <div className="flex-1 p-4 space-y-4 bg-white">
+    <div className="flex-1 p-4 space-y-4 bg-white overflow-scroll">
       <div className="flex items-start">
         <div className="max-w-md px-4 py-2 bg-[#F5F5F6] rounded">
           <div>Hello! How are you?</div>
