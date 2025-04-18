@@ -33,6 +33,7 @@ const ChatListTabs = () => {
               },
               "cursor-pointer"
             )}
+            key={idx}
           >
             {tab}
           </div>
@@ -53,8 +54,8 @@ const ExtraTabs = (props: { extras: string[] }) => {
         <Ellipsis />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {props.extras.map((extra) => (
-          <DropdownMenuItem className="cursor-pointer">
+        {props.extras.map((extra, idx) => (
+          <DropdownMenuItem className="cursor-pointer" key={idx}>
             {extra}
           </DropdownMenuItem>
         ))}

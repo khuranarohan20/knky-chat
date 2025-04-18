@@ -44,11 +44,12 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
   --gray-bg: rgba(245, 245, 246, 1);
   --primary-color: #ac1991;
+  --gray-color: rgba(77, 80, 83, 1);
 }
 
 html,
 body {
-  @apply bg-white;
+  @apply bg-[#ebebec];
 }
 
 @media (prefers-color-scheme: var(--color-scheme)) {
@@ -137,4 +138,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+#root {
+  height: 100%;
 }
