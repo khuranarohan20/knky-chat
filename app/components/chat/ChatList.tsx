@@ -75,7 +75,7 @@ const ChatList = () => {
                   src={getAssetUrl({ media: avatar, defaultType: "avatar" })}
                   height={56}
                   width={56}
-                  className="rounded-full shrink-0"
+                  className="rounded-full shrink-0 object-cover"
                 />
                 <div className="flex flex-col min-w-0 w-full">
                   <div className="truncate font-medium">{displayName}</div>

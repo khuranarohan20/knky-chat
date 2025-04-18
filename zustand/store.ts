@@ -1,4 +1,4 @@
-import type { Chat } from "types/chat";
+import type { Chat, ChatPerson } from "types/chat";
 import { create } from "zustand";
 
 import { devtools, persist } from "zustand/middleware";
@@ -13,6 +13,8 @@ interface ChatState {
   setActiveChat: (person: Chat) => void;
   activeChannelId: string;
   setActiveChannelId: (id: string) => void;
+  targetPerson: ChatPerson | null;
+  setTargetPerson: (person: ChatPerson) => void;
 }
 
 const useChatStore = create<ChatState>()(
@@ -24,6 +26,10 @@ const useChatStore = create<ChatState>()(
     activeChannelId: "",
     setActiveChannelId(id) {
       set({ activeChannelId: id });
+    },
+    targetPerson: null,
+    setTargetPerson(person) {
+      set({ targetPerson: person });
     },
   }))
 );
