@@ -1,4 +1,4 @@
-import type { Chat, ChatPerson } from "types/chat";
+import type { Chat, ChatPerson, MessageInterface } from "types/chat";
 import { create } from "zustand";
 
 import { devtools, persist } from "zustand/middleware";
@@ -19,6 +19,7 @@ interface ChatState {
   setConverseToken: (token: string) => void;
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
+  setCompleteMessages: (messages: MessageInterface[]) => void;
 }
 
 const useChatStore = create<ChatState>()(
@@ -43,6 +44,13 @@ const useChatStore = create<ChatState>()(
     setIsLoading(isLoading) {
       set({ isLoading });
     },
+    setCompleteMessages: (messages) =>
+      set((state) => ({
+        activeChat: {
+          ...(state.activeChat || {}),
+          complete_messages: messages,
+        },
+      })),
   }))
 );
 

@@ -2,7 +2,7 @@ import { GetChatList } from "api/chat";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { Dot } from "lucide-react";
 import { toast } from "sonner";
-import type { Chat } from "types/chat";
+import type { Chat, MessageInterface } from "types/chat";
 import { getAssetUrl } from "utils/asset";
 import chatSocket from "utils/chat-socket";
 import useChatStore from "zustand/store";
@@ -22,6 +22,8 @@ const ChatList = () => {
     activeChat,
     activeChannelId,
     isLoading,
+    setIsLoading,
+    setCompleteMessages,
   } = useChatStore((state) => state);
 
   useAsyncEffect(async () => {
@@ -38,7 +40,12 @@ const ChatList = () => {
       );
       toast.promise(promise, {
         loading: "Connecting...",
-        success: () => {
+        success: async (channel) => {
+          const { msgs } = await channel.getMessages({});
+          setCompleteMessages([
+            ...msgs.read,
+            ...msgs.unread,
+          ] as MessageInterface[]);
           return "Connected!";
         },
         error: "Error",
@@ -57,7 +64,15 @@ const ChatList = () => {
     const promise = chatSocket.updateChannel(chat.converse_channel_id);
     toast.promise(promise, {
       loading: "Connecting...",
-      success: () => {
+      success: async (channel) => {
+        if (!channel) return;
+        setIsLoading(true);
+        const { msgs } = await channel.getMessages({});
+        setCompleteMessages([
+          ...msgs.read,
+          ...msgs.unread,
+        ] as MessageInterface[]);
+        setIsLoading(false);
         return "Connected!";
       },
       error: "Error",
