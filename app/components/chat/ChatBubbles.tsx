@@ -1,6 +1,14 @@
+import useChatStore from "zustand/store";
 import DateFormatter from "~/utils/DateFormatter";
+import ChatBubblesShimmer from "../shimmers/ChatBubbleShimmer";
 
 const ChatBubbles = () => {
+  const isLoading = useChatStore((s) => s.isLoading);
+
+  if (isLoading) {
+    return <ChatBubblesShimmer />;
+  }
+
   return (
     <div className="flex-1 p-4 space-y-4 bg-white">
       <div className="flex items-start">

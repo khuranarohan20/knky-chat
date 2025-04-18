@@ -10,3 +10,11 @@ export const GetChatList = (page: number = 1, limit: number = 100) => {
     status: number;
   }>;
 };
+
+export const VerifyConverseToken = (body: {
+  projectId: string;
+  token: string;
+}) => API.post(`${API.USERS}/verify-converse-token`, body) as Promise<any>;
+
+export const RequestConverseToken = () =>
+  API.get(`${API.USERS}/request-converse-token`) as Promise<any>;

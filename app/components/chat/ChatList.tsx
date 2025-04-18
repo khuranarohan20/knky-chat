@@ -4,10 +4,12 @@ import { Dot } from "lucide-react";
 import { toast } from "sonner";
 import type { Chat } from "types/chat";
 import { getAssetUrl } from "utils/asset";
+import chatSocket from "utils/chat-socket";
 import useChatStore from "zustand/store";
 import { myUserId } from "~/chat/chat";
 import { useAsyncEffect } from "~/hooks/useAsyncEffect";
 import { cn } from "~/lib/utils";
+import ChatListShimmer from "../shimmers/ChatListShimmer";
 import ChatHeader from "./ChatHeader";
 import ChatListTabs from "./ChatListTabs";
 
@@ -17,26 +19,53 @@ const ChatList = () => {
     setChatList: setList,
     setActiveChat,
     setActiveChannelId,
+    activeChat,
     activeChannelId,
+    isLoading,
   } = useChatStore((state) => state);
 
   useAsyncEffect(async () => {
     try {
       const response = await GetChatList();
+
       if (response.data.length === 0) return;
       let chatList = response.data.filter((c) => c.message);
       setList(chatList);
       setActiveChat(chatList?.[0]);
       setActiveChannelId(chatList?.[0].converse_channel_id);
+      const promise = chatSocket.updateChannel(
+        chatList?.[0]?.converse_channel_id
+      );
+      toast.promise(promise, {
+        loading: "Connecting...",
+        success: () => {
+          return "Connected!";
+        },
+        error: "Error",
+      });
     } catch (error: any) {
       console.log(error);
       toast.error(error.message);
     }
   }, []);
 
-  function handleChatClick(chat: Chat) {
+  async function handleChatClick(chat: Chat) {
+    if (chat === activeChat) return;
+
     setActiveChat(chat);
     setActiveChannelId(chat.converse_channel_id);
+    const promise = chatSocket.updateChannel(chat.converse_channel_id);
+    toast.promise(promise, {
+      loading: "Connecting...",
+      success: () => {
+        return "Connected!";
+      },
+      error: "Error",
+    });
+  }
+
+  if (isLoading) {
+    return <ChatListShimmer />;
   }
 
   return (

@@ -15,6 +15,10 @@ interface ChatState {
   setActiveChannelId: (id: string) => void;
   targetPerson: ChatPerson | null;
   setTargetPerson: (person: ChatPerson) => void;
+  converseToken: string;
+  setConverseToken: (token: string) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
 const useChatStore = create<ChatState>()(
@@ -30,6 +34,14 @@ const useChatStore = create<ChatState>()(
     targetPerson: null,
     setTargetPerson(person) {
       set({ targetPerson: person });
+    },
+    converseToken: "",
+    setConverseToken(token) {
+      set({ converseToken: token });
+    },
+    isLoading: false,
+    setIsLoading(isLoading) {
+      set({ isLoading });
     },
   }))
 );

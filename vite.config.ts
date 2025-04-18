@@ -12,6 +12,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./app"),
+      "converse.svc-client": path.resolve(
+        __dirname,
+        "./node_modules/converse.svc-client/src/index.js"
+      ),
     },
   },
 });

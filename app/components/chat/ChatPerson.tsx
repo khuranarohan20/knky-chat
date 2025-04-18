@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { getAssetUrl } from "utils/asset";
 import useChatStore from "zustand/store";
 import { myUserId } from "~/chat/chat";
+import ChatPersonShimmer from "../shimmers/ChatPersonShimmer";
 
 const ChatPerson = () => {
-  const { activeChat, targetPerson, setTargetPerson } = useChatStore(
+  const { activeChat, targetPerson, setTargetPerson, isLoading } = useChatStore(
     (state) => state
   );
 
@@ -17,6 +18,10 @@ const ChatPerson = () => {
       setTargetPerson(target);
     }
   }, [activeChat]);
+
+  if (isLoading) {
+    return <ChatPersonShimmer />;
+  }
 
   return (
     <div className="border-b p-3 flex gap-2 items-center">
