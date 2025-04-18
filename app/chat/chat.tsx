@@ -1,18 +1,13 @@
-import { GetChatList } from "api/chat";
-import { Button } from "~/components/ui/button";
-import { useAsyncEffect } from "~/hooks/useAsyncEffect";
+import ChatBox from "~/components/chat/ChatBox";
+import ChatList from "~/components/chat/ChatList";
+
+export const myUserId = "6778c9e90af4b8bd174cb80f";
 
 const Chat = () => {
-  useAsyncEffect(async () => {
-    GetChatList().then((res) => {
-      console.log(res);
-    });
-  }, []);
-
   return (
-    <div>
-      Main Chat Page
-      <Button>This is a button</Button>
+    <div className="flex h-[calc(100vh-4rem)] p-3 overflow-hidden gap-3 flex-col lg:flex-row">
+      <ChatList />
+      <ChatBox />
     </div>
   );
 };
