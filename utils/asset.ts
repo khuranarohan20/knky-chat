@@ -1,8 +1,8 @@
 import type { Media, Variation } from "types/media";
 
 const DefaultAssetUrls = {
-  avatar: "/images/default.svg",
-  background: "/images/defaultBack.svg",
+  avatar: "/svgs/default.svg",
+  background: "/svgs/defaultBack.svg",
 };
 
 export function getAssetUrl({
