@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { getAssetUrl } from "utils/asset";
 import useChatStore from "zustand/store";
-import { myUserId } from "~/chat/chat";
 import ChatPersonShimmer from "../shimmers/ChatPersonShimmer";
 
 const ChatPerson = () => {
-  const { activeChat, targetPerson, setTargetPerson, isLoading } = useChatStore(
-    (state) => state
-  );
+  const { activeChat, targetPerson, setTargetPerson, isLoading, userDetails } =
+    useChatStore((state) => state);
+  const myUserId = userDetails._id;
 
   useEffect(() => {
     if (activeChat) {

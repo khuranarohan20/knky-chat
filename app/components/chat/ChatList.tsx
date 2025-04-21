@@ -6,7 +6,6 @@ import type { Chat, MessageInterface } from "types/chat";
 import { getAssetUrl } from "utils/asset";
 import chatSocket from "utils/chat-socket";
 import useChatStore from "zustand/store";
-import { myUserId } from "~/chat/chat";
 import { useAsyncEffect } from "~/hooks/useAsyncEffect";
 import { cn } from "~/lib/utils";
 import ChatListShimmer from "../shimmers/ChatListShimmer";
@@ -24,7 +23,9 @@ const ChatList = () => {
     isLoading,
     setIsLoading,
     setCompleteMessages,
+    userDetails,
   } = useChatStore((state) => state);
+  const myUserId = userDetails._id;
 
   useAsyncEffect(async () => {
     try {
@@ -98,7 +99,11 @@ const ChatList = () => {
             ? item?.target?.display_name || item?.target?.username
             : item?.initiator?.display_name || item?.initiator?.username;
 
-          const message = item?.message?.message;
+          const message =
+            item?.complete_messages?.[item?.complete_messages?.length - 1] ||
+            item?.message;
+
+          const hasUnreadCount = item?.unread_count > 0;
 
           return (
             <div
@@ -109,11 +114,16 @@ const ChatList = () => {
                   "border-transparent":
                     item?.converse_channel_id !== activeChannelId,
                 },
-                "border-l-3 flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer"
+                "border-l-3 flex items-center justify-between p-2 hover:bg-gray-100 cursor-pointer relative"
               )}
               key={idx}
               onClick={() => handleChatClick(item)}
             >
+              {hasUnreadCount && (
+                <div className="absolute top-3 right-0 w-5 h-5 text-white bg-[var(--primary-color)] rounded-full flex items-center justify-center text-xs font-medium">
+                  {item.unread_count}
+                </div>
+              )}
               <div className="flex items-center gap-2 w-full">
                 <img
                   src={getAssetUrl({ media: avatar, defaultType: "avatar" })}
@@ -122,16 +132,29 @@ const ChatList = () => {
                   className="rounded-full shrink-0 object-cover"
                 />
                 <div className="flex flex-col min-w-0 w-full">
-                  <div className="truncate font-medium">{displayName}</div>
+                  <div
+                    className={cn("truncate font-medium", {
+                      "font-bold": hasUnreadCount,
+                    })}
+                  >
+                    {displayName}
+                  </div>
                   <div className="flex items-center min-w-0 w-full">
-                    <div className="truncate text-[var(--gray-color)] text-sm min-w-0 w-fit">
-                      {message}
+                    <div
+                      className={cn(
+                        "truncate text-[var(--gray-color)] text-sm min-w-0 w-fit",
+                        {
+                          "font-bold": hasUnreadCount,
+                        }
+                      )}
+                    >
+                      {message?.message}
                     </div>
                     <div className="w-fit">
                       <Dot />
                     </div>
                     <div className="shrink-0 text-[var(--gray-color)] text-sm whitespace-nowrap">
-                      {formatDistanceToNow(new Date(item?.message?.createdAt), {
+                      {formatDistanceToNow(new Date(message?.createdAt), {
                         addSuffix: true,
                       })}
                     </div>

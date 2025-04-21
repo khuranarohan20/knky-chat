@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import useChatStore from "zustand/store";
-import { myUserId } from "~/chat/chat";
 import { cn } from "~/lib/utils";
 import DateFormatter from "~/utils/DateFormatter";
 import ChatBubblesShimmer from "../shimmers/ChatBubbleShimmer";
 
 const ChatBubbles = () => {
+  const userDetails = useChatStore((s) => s.userDetails);
+  const myUserId = userDetails._id;
   const isLoading = useChatStore((s) => s.isLoading);
   const complete_messages =
     useChatStore((s) => s.activeChat?.complete_messages) || [];
@@ -30,7 +31,7 @@ const ChatBubbles = () => {
       ref={scrollRef}
     >
       {complete_messages.map((message, index) => {
-        const isSender = message?.sender_id === uid;
+        const isSender = message?.sender_id === uid || message?.sid === uid;
         const isLast = index === complete_messages.length - 1;
 
         return (

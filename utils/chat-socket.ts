@@ -2,6 +2,7 @@ import { RequestConverseToken, VerifyConverseToken } from "api/chat";
 import type { Channel, Project } from "converse.svc-client";
 import { Converse } from "converse.svc-client";
 import { toast } from "sonner";
+import type { MessageInterface } from "types/chat";
 import useChatStore from "zustand/store";
 
 interface IChatSocket {
@@ -129,7 +130,7 @@ class ChatSocket implements IChatSocket {
         batch: 50,
       });
 
-      // this.setupChannelListeners(channelId);
+      this.setupChannelListeners();
 
       this.updatedChannels.add(channelId);
       this.retryCount = 0;
@@ -178,6 +179,32 @@ class ChatSocket implements IChatSocket {
       );
       this.updateChannel(channelId);
     }, retryDelay);
+  }
+
+  async sendMessage(data: { message?: string; files?: File[] }) {
+    if (!this.channel) return;
+
+    if (!data.message && !data.files) {
+      throw Error("No message or files to send");
+    }
+
+    return this.channel.sendMessage({
+      message: data.message || "",
+      meta: {},
+    });
+  }
+
+  setupChannelListeners() {
+    if (!this.converse) return;
+    if (!this.channelId) return;
+
+    this.channel?.listenMessage((message: MessageInterface) =>
+      this.handleNewMessageInChannel(this.channelId, message)
+    );
+  }
+
+  handleNewMessageInChannel(channelId: string, message: MessageInterface) {
+    this.store.addMessage(message);
   }
 
   closeChannel() {

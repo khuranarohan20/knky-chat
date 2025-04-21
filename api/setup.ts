@@ -1,3 +1,5 @@
+import useChatStore from "zustand/store";
+
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface RequestParams {
@@ -43,7 +45,7 @@ async function setupAPI({
     "x-api-key": import.meta.env.KNKY_X_API_KEY,
     ...(isProtected
       ? {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NzhjOWU5MGFmNGI4YmQxNzRjYjgwZiIsInVzZXJuYW1lIjoiZWJvbnkiLCJlbWFpbCI6InJvaGFuLmtodXJhbmEuZGV2LmlpYytyYWxwaEBnbWFpbC5jb20iLCJyb2xlIjoiQ1JFQVRPUiIsIm1ldGhvZCI6ImVtYWlsIiwiaWF0IjoxNzQ0ODg2OTMyLCJleHAiOjE4NDQ4OTA1MzJ9.6cBs2vnMyjt46KVDPH-Z1KOBevUFVcg0WtZ4YYMVtxg`,
+          Authorization: `Bearer ${useChatStore.getState().userDetails.token}`,
         }
       : {}),
     ...headers,
