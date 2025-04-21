@@ -12,7 +12,7 @@ export interface Setters {
   setIsLoading: (isLoading: boolean) => void;
   setUserDetails: (details: { _id: string; token: string }) => void;
   setCompleteMessages: (messages: MessageInterface[]) => void;
-  addMessage: (message: MessageInterface) => void;
+  addMessage: (message: MessageInterface, channelId: string) => void;
 }
 
 export interface ChatState extends Setters {
@@ -41,7 +41,13 @@ export const chatStore = createStore<ChatState>()(
         userDetails: { _id: "", token: "" },
 
         setChatList: (chatList) => set({ chatList }),
-        setActiveChat: (chat) => set({ activeChat: chat }),
+        setActiveChat: (chat) =>
+          set({
+            activeChat: {
+              ...chat,
+              unread_count: 0,
+            },
+          }),
         setActiveChannelId: (id) => set({ activeChannelId: id }),
         setTargetPerson: (person) => set({ targetPerson: person }),
         setConverseToken: (token) => set({ converseToken: token }),
@@ -70,50 +76,57 @@ export const chatStore = createStore<ChatState>()(
           }));
         },
 
-        addMessage: (message) =>
+        addMessage: (message, channelId) =>
           set((state) => {
-            const updatedMessages = [
-              ...(state.activeChat?.complete_messages || []),
-              message,
-            ];
+            const updatedChatList = state.chatList.map((chat) => {
+              if (chat.converse_channel_id === channelId) {
+                const newMessages = [
+                  ...(chat.complete_messages || []),
+                  message,
+                ];
+                return {
+                  ...chat,
+                  message,
+                  complete_messages: newMessages,
+                  unread_count: chat.unread_count + 1,
+                };
+              }
+              return chat;
+            });
+
+            const sortedChatList = updatedChatList.sort((a, b) => {
+              const aTime = new Date(
+                a.complete_messages?.[a.complete_messages.length - 1]
+                  ?.createdAt ||
+                  a.message?.createdAt ||
+                  0
+              ).getTime();
+
+              const bTime = new Date(
+                b.complete_messages?.[b.complete_messages.length - 1]
+                  ?.createdAt ||
+                  b.message?.createdAt ||
+                  0
+              ).getTime();
+
+              return bTime - aTime;
+            });
+
+            const isUpdatingActiveChat =
+              state.activeChat?.converse_channel_id === channelId;
+
             return {
-              activeChat: {
-                ...(state.activeChat || {
-                  _id: "",
-                  target: null,
-                  initiator: null,
-                  converse_channel_id: "",
-                  unread_count: 0,
-                  message: null,
-                  complete_messages: [],
-                  converse_consumable: [],
-                  lastmessage: null,
-                  buyers: [],
-                  payment_reminder: null,
-                }),
-                complete_messages: updatedMessages,
-              },
-              chatList: state.chatList
-                .map((chat) =>
-                  chat._id === state.activeChat?._id
-                    ? { ...chat, complete_messages: updatedMessages }
-                    : chat
-                )
-                .sort((a, b) => {
-                  const aTime = new Date(
-                    a.complete_messages?.[a.complete_messages.length - 1]
-                      ?.createdAt ||
-                      a.message?.createdAt ||
-                      0
-                  ).getTime();
-                  const bTime = new Date(
-                    b.complete_messages?.[b.complete_messages.length - 1]
-                      ?.createdAt ||
-                      b.message?.createdAt ||
-                      0
-                  ).getTime();
-                  return bTime - aTime;
-                }),
+              chatList: sortedChatList,
+              activeChat: isUpdatingActiveChat
+                ? {
+                    ...state.activeChat,
+                    complete_messages: [
+                      ...(state.activeChat.complete_messages || []),
+                      message,
+                    ],
+                    message,
+                  }
+                : state.activeChat,
             };
           }),
       }),

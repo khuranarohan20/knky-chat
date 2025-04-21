@@ -30,7 +30,23 @@ const ChatList = () => {
       const response = await GetChatList();
 
       if (response.data.length === 0) return;
-      let chatList = response.data.filter((c) => c.message);
+      let chatList = response.data
+        .filter((c) => c.message)
+        .sort((a, b) => {
+          const aTime = new Date(
+            a.complete_messages?.[a.complete_messages.length - 1]?.createdAt ||
+              a.message?.createdAt ||
+              0
+          ).getTime();
+
+          const bTime = new Date(
+            b.complete_messages?.[b.complete_messages.length - 1]?.createdAt ||
+              b.message?.createdAt ||
+              0
+          ).getTime();
+
+          return bTime - aTime;
+        });
       dispatch.setChatList(chatList);
       dispatch.setActiveChat(chatList?.[0]);
       dispatch.setActiveChannelId(chatList?.[0].converse_channel_id);
@@ -117,11 +133,12 @@ const ChatList = () => {
               key={idx}
               onClick={() => handleChatClick(item)}
             >
-              {hasUnreadCount && (
-                <div className="absolute top-3 right-0 w-5 h-5 text-white bg-[var(--primary-color)] rounded-full flex items-center justify-center text-xs font-medium">
-                  {item.unread_count}
-                </div>
-              )}
+              {hasUnreadCount &&
+                item?.converse_channel_id !== activeChannelId && (
+                  <div className="absolute top-3 right-0 w-5 h-5 text-white bg-[var(--primary-color)] rounded-full flex items-center justify-center text-xs font-medium">
+                    {item.unread_count}
+                  </div>
+                )}
               <div className="flex items-center gap-2 w-full">
                 <img
                   src={getAssetUrl({ media: avatar, defaultType: "avatar" })}
@@ -132,7 +149,9 @@ const ChatList = () => {
                 <div className="flex flex-col min-w-0 w-full">
                   <div
                     className={cn("truncate font-medium", {
-                      "font-bold": hasUnreadCount,
+                      "font-bold":
+                        hasUnreadCount &&
+                        item?.converse_channel_id !== activeChannelId,
                     })}
                   >
                     {displayName}
@@ -142,7 +161,9 @@ const ChatList = () => {
                       className={cn(
                         "truncate text-[var(--gray-color)] text-sm min-w-0 w-fit",
                         {
-                          "font-bold": hasUnreadCount,
+                          "font-bold":
+                            hasUnreadCount &&
+                            item?.converse_channel_id !== activeChannelId,
                         }
                       )}
                     >

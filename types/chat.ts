@@ -46,7 +46,7 @@ interface Serviceid {
   price: number;
 }
 
-interface MetaInterface {
+export interface MetaInterface {
   type:
     | "ACCEPT_CALL"
     | "RATING"

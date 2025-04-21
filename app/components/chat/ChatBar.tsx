@@ -1,8 +1,10 @@
 import { useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import chatSocket from "utils/chat-socket";
+import { useAppSelector } from "zustand/hooks";
 
 const ChatBar = () => {
+  const targetPerson = useAppSelector((s) => s.targetPerson);
   const [message, setMessage] = useState("");
 
   function handleChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -12,8 +14,10 @@ const ChatBar = () => {
   async function handleSendMessage() {
     if (message === "") return;
     try {
-      await chatSocket.sendMessage({
+      await chatSocket.sendMessageOnChannel({
         message,
+        shareOnProject: true,
+        users: [targetPerson._id],
       });
       setMessage("");
     } catch (error) {

@@ -2,7 +2,7 @@ import { RequestConverseToken, VerifyConverseToken } from "api/chat";
 import type { Channel, Project } from "converse.svc-client";
 import { Converse } from "converse.svc-client";
 import { toast } from "sonner";
-import type { MessageInterface } from "types/chat";
+import type { MessageInterface, MetaInterface } from "types/chat";
 import { chatStore, type ChatState, type Setters } from "zustand/store";
 
 interface IChatSocket {
@@ -15,6 +15,12 @@ interface IChatSocket {
   waitTillConnected: () => Promise<void>;
   retryChannelUpdate: (channelId: string) => void;
   closeChannel(): void;
+  sendMessageOnProject: (data: {
+    message?: string;
+    files?: File[];
+    meta?: MetaInterface;
+    users: string[];
+  }) => void;
 }
 
 class ChatSocket implements IChatSocket {
@@ -109,8 +115,22 @@ class ChatSocket implements IChatSocket {
     }
   }
 
-  handleNewProjectMessage(msg: any) {
-    console.log(msg);
+  handleNewProjectMessage(msg: {
+    message: string;
+    sid: string;
+    name: string;
+    meta: MetaInterface;
+    creationTime: string;
+  }) {
+    if (msg?.sid === this.store.userDetails._id) return;
+    this.dispatch.addMessage(
+      {
+        ...msg,
+        sender_id: msg.sid,
+        createdAt: msg.creationTime || new Date().toISOString(),
+      } as any,
+      msg?.meta?.converseId
+    );
   }
 
   async updateChannel(channelId: string) {
@@ -186,16 +206,57 @@ class ChatSocket implements IChatSocket {
     }, retryDelay);
   }
 
-  async sendMessage(data: { message?: string; files?: File[] }) {
+  async sendMessageOnChannel(data: {
+    message?: string;
+    files?: File[];
+    shareOnProject?: boolean;
+    users?: string[];
+    meta?: MetaInterface;
+  }) {
     if (!this.channel) return;
 
     if (!data.message && !data.files) {
       throw Error("No message or files to send");
     }
 
+    if (data.shareOnProject && data.users.length > 0) {
+      if (!this.projectInstance) return;
+      await this.sendMessageOnProject({
+        message: data.message || "",
+        users: data.users,
+        meta: {
+          ...data?.meta,
+        },
+      });
+    }
+
     return this.channel.sendMessage({
       message: data.message || "",
       meta: {},
+    });
+  }
+  async sendMessageOnProject(data: {
+    message?: string;
+    files?: File[];
+    meta?: MetaInterface;
+    users: string[];
+  }) {
+    if (!this.projectInstance) return;
+
+    if (!data.message && !data.files) {
+      throw Error("No message or files to send");
+    }
+
+    return this.projectInstance.notifyPeople({
+      msg: {
+        message: data.message || "",
+        meta: {
+          ...data?.meta,
+          converseId: this.channelId,
+        },
+        creationTime: new Date().toISOString(),
+      },
+      users: data.users,
     });
   }
 
@@ -209,7 +270,7 @@ class ChatSocket implements IChatSocket {
   }
 
   handleNewMessageInChannel(channelId: string, message: MessageInterface) {
-    this.dispatch.addMessage(message);
+    this.dispatch.addMessage(message, channelId);
   }
 
   closeChannel() {
