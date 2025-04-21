@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { getAssetUrl } from "utils/asset";
-import useChatStore from "zustand/store";
+import { useAppDispatch, useAppSelector } from "zustand/hooks";
 import ChatPersonShimmer from "../shimmers/ChatPersonShimmer";
 
 const ChatPerson = () => {
-  const { activeChat, targetPerson, setTargetPerson, isLoading, userDetails } =
-    useChatStore((state) => state);
+  const dispatch = useAppDispatch().chatActions;
+  const { activeChat, targetPerson, isLoading, userDetails } = useAppSelector(
+    (state) => state
+  );
   const myUserId = userDetails._id;
 
   useEffect(() => {
@@ -14,7 +16,7 @@ const ChatPerson = () => {
         activeChat?.target?._id === myUserId
           ? activeChat?.initiator
           : activeChat?.target;
-      setTargetPerson(target);
+      dispatch.setTargetPerson(target);
     }
   }, [activeChat]);
 

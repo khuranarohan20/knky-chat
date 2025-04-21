@@ -9,6 +9,8 @@ import {
 
 import { Toaster } from "sonner";
 
+import { useEffect } from "react";
+import chatSocket from "utils/chat-socket";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -45,6 +47,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    chatSocket.init();
+  }, []);
+
   return <Outlet />;
 }
 

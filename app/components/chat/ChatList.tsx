@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { Chat, MessageInterface } from "types/chat";
 import { getAssetUrl } from "utils/asset";
 import chatSocket from "utils/chat-socket";
-import useChatStore from "zustand/store";
+import { useAppDispatch, useAppSelector } from "zustand/hooks";
 import { useAsyncEffect } from "~/hooks/useAsyncEffect";
 import { cn } from "~/lib/utils";
 import ChatListShimmer from "../shimmers/ChatListShimmer";
@@ -13,18 +13,16 @@ import ChatHeader from "./ChatHeader";
 import ChatListTabs from "./ChatListTabs";
 
 const ChatList = () => {
+  const dispatch = useAppDispatch().chatActions;
+
   const {
     chatList: list,
-    setChatList: setList,
-    setActiveChat,
-    setActiveChannelId,
     activeChat,
     activeChannelId,
     isLoading,
-    setIsLoading,
-    setCompleteMessages,
     userDetails,
-  } = useChatStore((state) => state);
+  } = useAppSelector((state) => state);
+
   const myUserId = userDetails._id;
 
   useAsyncEffect(async () => {
@@ -33,9 +31,9 @@ const ChatList = () => {
 
       if (response.data.length === 0) return;
       let chatList = response.data.filter((c) => c.message);
-      setList(chatList);
-      setActiveChat(chatList?.[0]);
-      setActiveChannelId(chatList?.[0].converse_channel_id);
+      dispatch.setChatList(chatList);
+      dispatch.setActiveChat(chatList?.[0]);
+      dispatch.setActiveChannelId(chatList?.[0].converse_channel_id);
       const promise = chatSocket.updateChannel(
         chatList?.[0]?.converse_channel_id
       );
@@ -43,7 +41,7 @@ const ChatList = () => {
         loading: "Connecting...",
         success: async (channel) => {
           const { msgs } = await channel.getMessages({});
-          setCompleteMessages([
+          dispatch.setCompleteMessages([
             ...msgs.read,
             ...msgs.unread,
           ] as MessageInterface[]);
@@ -60,20 +58,20 @@ const ChatList = () => {
   async function handleChatClick(chat: Chat) {
     if (chat === activeChat) return;
 
-    setActiveChat(chat);
-    setActiveChannelId(chat.converse_channel_id);
+    dispatch.setActiveChat(chat);
+    dispatch.setActiveChannelId(chat.converse_channel_id);
     const promise = chatSocket.updateChannel(chat.converse_channel_id);
     toast.promise(promise, {
       loading: "Connecting...",
       success: async (channel) => {
         if (!channel) return;
-        setIsLoading(true);
+        dispatch.setIsLoading(true);
         const { msgs } = await channel.getMessages({});
-        setCompleteMessages([
+        dispatch.setCompleteMessages([
           ...msgs.read,
           ...msgs.unread,
         ] as MessageInterface[]);
-        setIsLoading(false);
+        dispatch.setIsLoading(false);
         return "Connected!";
       },
       error: "Error",

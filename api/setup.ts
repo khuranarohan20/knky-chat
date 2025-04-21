@@ -1,4 +1,4 @@
-import useChatStore from "zustand/store";
+import { chatStore } from "zustand/store";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -38,6 +38,7 @@ async function setupAPI({
 }: RequestParams) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
+  const userDetails = chatStore.getState().userDetails;
 
   const isJSON = !(body instanceof FormData);
   const finalHeaders = {
@@ -45,7 +46,7 @@ async function setupAPI({
     "x-api-key": import.meta.env.KNKY_X_API_KEY,
     ...(isProtected
       ? {
-          Authorization: `Bearer ${useChatStore.getState().userDetails.token}`,
+          Authorization: `Bearer ${userDetails.token}`,
         }
       : {}),
     ...headers,

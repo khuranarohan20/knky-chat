@@ -1,11 +1,8 @@
 import { useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import chatSocket from "utils/chat-socket";
-import useChatStore from "zustand/store";
 
 const ChatBar = () => {
-  const setCompleteMessages = useChatStore((s) => s.setCompleteMessages);
-
   const [message, setMessage] = useState("");
 
   function handleChange(e: ChangeEvent<HTMLInputElement>): void {

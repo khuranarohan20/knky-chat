@@ -3,7 +3,7 @@ import type { Channel, Project } from "converse.svc-client";
 import { Converse } from "converse.svc-client";
 import { toast } from "sonner";
 import type { MessageInterface } from "types/chat";
-import useChatStore from "zustand/store";
+import { chatStore, type ChatState, type Setters } from "zustand/store";
 
 interface IChatSocket {
   init: () => Promise<void>;
@@ -18,8 +18,8 @@ interface IChatSocket {
 }
 
 class ChatSocket implements IChatSocket {
-  private store = useChatStore.getState();
-
+  private store: ChatState;
+  private dispatch: Setters;
   channel: Channel | null = null;
   projectInstance: Project | null = null;
   private converse: Converse | null = null;
@@ -29,8 +29,13 @@ class ChatSocket implements IChatSocket {
   private maxRetries = 5;
   private retryCount = 0;
 
+  constructor() {
+    this.store = chatStore.getState();
+    this.dispatch = chatStore.getState();
+  }
+
   async init() {
-    this.store.setIsLoading(true);
+    this.dispatch.setIsLoading(true);
 
     try {
       if (this.converse) return;
@@ -46,7 +51,7 @@ class ChatSocket implements IChatSocket {
       } catch (error) {
         const res = await RequestConverseToken();
         newConverseToken = res.data.token;
-        this.store.setConverseToken(newConverseToken);
+        this.dispatch.setConverseToken(newConverseToken);
       }
 
       await this.converse.init({
@@ -74,7 +79,7 @@ class ChatSocket implements IChatSocket {
       console.log("Initializing socket failed: ", error);
       this.retryInitialization();
     } finally {
-      this.store.setIsLoading(false);
+      this.dispatch.setIsLoading(false);
     }
   }
 
@@ -113,7 +118,7 @@ class ChatSocket implements IChatSocket {
       this.retryCount = 0;
       return null;
     }
-    this.store.setIsLoading(true);
+    this.dispatch.setIsLoading(true);
     try {
       await this.waitTillConnected();
 
@@ -141,7 +146,7 @@ class ChatSocket implements IChatSocket {
       this.retryChannelUpdate(channelId);
       return null;
     } finally {
-      this.store.setIsLoading(false);
+      this.dispatch.setIsLoading(false);
     }
   }
 
@@ -204,7 +209,7 @@ class ChatSocket implements IChatSocket {
   }
 
   handleNewMessageInChannel(channelId: string, message: MessageInterface) {
-    this.store.addMessage(message);
+    this.dispatch.addMessage(message);
   }
 
   closeChannel() {

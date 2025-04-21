@@ -1,15 +1,15 @@
 import { useEffect, useRef } from "react";
-import useChatStore from "zustand/store";
+import { useAppSelector } from "zustand/hooks";
 import { cn } from "~/lib/utils";
 import DateFormatter from "~/utils/DateFormatter";
 import ChatBubblesShimmer from "../shimmers/ChatBubbleShimmer";
 
 const ChatBubbles = () => {
-  const userDetails = useChatStore((s) => s.userDetails);
+  const userDetails = useAppSelector((s) => s.userDetails);
   const myUserId = userDetails._id;
-  const isLoading = useChatStore((s) => s.isLoading);
+  const isLoading = useAppSelector((s) => s.isLoading);
   const complete_messages =
-    useChatStore((s) => s.activeChat?.complete_messages) || [];
+    useAppSelector((s) => s.activeChat?.complete_messages) || [];
 
   const uid = myUserId;
 

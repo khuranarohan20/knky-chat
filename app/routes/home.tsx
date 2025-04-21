@@ -2,8 +2,7 @@ import { API } from "api/setup";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import chatSocket from "utils/chat-socket";
-import useChatStore from "zustand/store";
+import { useAppDispatch, useAppSelector } from "zustand/hooks";
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/home";
 
@@ -16,7 +15,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { setUserDetails, converseToken } = useChatStore((state) => state);
+  const converseToken = useAppSelector((state) => state.converseToken);
+  const dispatch = useAppDispatch().chatActions;
 
   const [username, setUsername] = useState("");
 
@@ -33,11 +33,10 @@ export default function Home() {
         ];
       };
 
-      setUserDetails({
+      dispatch.setUserDetails({
         _id: response.data[0]._id,
         token: response.data[0].token,
       });
-      await chatSocket.init();
     } catch (error) {
       console.error("Error fetching token:", error);
       toast.error("Error fetching token and id");
