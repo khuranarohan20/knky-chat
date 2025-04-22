@@ -13,9 +13,12 @@ export interface Setters {
   setUserDetails: (details: { _id: string; token: string }) => void;
   setCompleteMessages: (messages: MessageInterface[]) => void;
   addMessage: (message: MessageInterface, channelId: string) => void;
+  setFirstItemIndex: any;
+  decreaseFirstItemIndex: any;
 }
 
 export interface ChatState extends Setters {
+  firstItemIndex: number;
   chatList: Chat[];
   activeChat: Chat | null;
   activeChannelId: string;
@@ -32,6 +35,7 @@ export const chatStore = createStore<ChatState>()(
   devtools(
     persist(
       (set) => ({
+        firstItemIndex: 0,
         chatList: [],
         activeChat: null,
         activeChannelId: "",
@@ -40,6 +44,10 @@ export const chatStore = createStore<ChatState>()(
         isLoading: false,
         userDetails: { _id: "", token: "" },
 
+        setFirstItemIndex: (index: number) =>
+          set(() => ({ firstItemIndex: index })),
+        decreaseFirstItemIndex: (count: number) =>
+          set((state) => ({ firstItemIndex: state.firstItemIndex - count })),
         setChatList: (chatList) => set({ chatList }),
         setActiveChat: (chat) =>
           set({

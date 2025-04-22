@@ -1,4 +1,5 @@
 import { RequestConverseToken, VerifyConverseToken } from "api/chat";
+import { MESSAGE_FETCH_LIMIT } from "constants/chat";
 import type { Channel, Project } from "converse.svc-client";
 import { Converse } from "converse.svc-client";
 import { nanoid } from "nanoid";
@@ -22,6 +23,7 @@ interface IChatSocket {
     meta?: MetaInterface;
     users: string[];
   }) => void;
+  getMoreMessages: (time: string) => Promise<void>;
 }
 
 class ChatSocket implements IChatSocket {
@@ -162,7 +164,7 @@ class ChatSocket implements IChatSocket {
       this.channel = await this.converse.connectChannel({
         channelId,
         ephemeral: false,
-        batch: 50,
+        batch: MESSAGE_FETCH_LIMIT,
       });
 
       this.setupChannelListeners();
@@ -287,6 +289,25 @@ class ChatSocket implements IChatSocket {
     if (this.channelId) {
       this.converse?.closeChannel(this.channelId as string);
       this.updatedChannels.delete(this.channelId as string);
+    }
+  }
+
+  async getMoreMessages(timestamp: string) {
+    if (!this.channel) return;
+    const prevMessages = this.store.activeChat?.complete_messages || [];
+
+    const messages = await this.channel.getMessages({ time: timestamp });
+    const newMessages = [
+      ...(messages?.msgs?.read || []),
+      ...(messages?.msgs?.unread || []),
+    ];
+
+    if (newMessages.length) {
+      this.dispatch.setCompleteMessages([
+        ...newMessages,
+        ...prevMessages,
+      ] as any);
+      this.dispatch.decreaseFirstItemIndex(newMessages.length);
     }
   }
 
