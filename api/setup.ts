@@ -17,14 +17,14 @@ const API_ROUTES = {
 };
 
 export const API = {
-  get: (url: string, headers?: any) =>
-    setupAPI({ url, method: "GET", headers }),
-  post: (url: string, body?: any, headers?: any) =>
-    setupAPI({ url, method: "POST", body, headers }),
-  put: (url: string, body?: any, headers?: any) =>
-    setupAPI({ url, method: "PUT", body, headers }),
-  delete: (url: string, headers?: any) =>
-    setupAPI({ url, method: "DELETE", headers }),
+  get: (url: string, headers?: any, isProtected?: boolean) =>
+    setupAPI({ url, method: "GET", headers, isProtected }),
+  post: (url: string, body?: any, headers?: any, isProtected?: boolean) =>
+    setupAPI({ url, method: "POST", body, headers, isProtected }),
+  put: (url: string, body?: any, headers?: any, isProtected?: boolean) =>
+    setupAPI({ url, method: "PUT", body, headers, isProtected }),
+  delete: (url: string, headers?: any, isProtected?: boolean) =>
+    setupAPI({ url, method: "DELETE", headers, isProtected }),
   ...API_ROUTES,
 };
 

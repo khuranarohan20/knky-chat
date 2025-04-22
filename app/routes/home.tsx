@@ -1,4 +1,4 @@
-import { API } from "api/setup";
+import { GetUserToken } from "api/chat";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -22,21 +22,13 @@ export default function Home() {
 
   const handleClick = async () => {
     try {
-      const response = (await API.get(
-        API.USERS + "/user-name" + `/${username}`
-      )) as {
-        data: [
-          {
-            _id: string;
-            token: string;
-          }
-        ];
-      };
+      const response = await GetUserToken(username);
 
       dispatch.setUserDetails({
         _id: response.data[0]._id,
         token: response.data[0].token,
       });
+      window.location.reload();
     } catch (error) {
       console.error("Error fetching token:", error);
       toast.error("Error fetching token and id");

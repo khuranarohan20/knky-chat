@@ -80,10 +80,12 @@ export const chatStore = createStore<ChatState>()(
           set((state) => {
             const updatedChatList = state.chatList.map((chat) => {
               if (chat.converse_channel_id === channelId) {
-                const newMessages = [
-                  ...(chat.complete_messages || []),
-                  message,
-                ];
+                const messageSet = new Map(
+                  (chat.complete_messages || []).map((msg) => [msg._id, msg])
+                );
+                messageSet.set(message._id, message);
+                const newMessages = Array.from(messageSet.values());
+
                 return {
                   ...chat,
                   message,
@@ -112,21 +114,11 @@ export const chatStore = createStore<ChatState>()(
               return bTime - aTime;
             });
 
-            const isUpdatingActiveChat =
-              state.activeChat?.converse_channel_id === channelId;
-
             return {
               chatList: sortedChatList,
-              activeChat: isUpdatingActiveChat
-                ? {
-                    ...state.activeChat,
-                    complete_messages: [
-                      ...(state.activeChat.complete_messages || []),
-                      message,
-                    ],
-                    message,
-                  }
-                : state.activeChat,
+              activeChat: sortedChatList.find(
+                (chat) => chat.converse_channel_id === state.activeChannelId
+              ),
             };
           }),
       }),

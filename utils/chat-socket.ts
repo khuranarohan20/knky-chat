@@ -1,9 +1,10 @@
 import { RequestConverseToken, VerifyConverseToken } from "api/chat";
 import type { Channel, Project } from "converse.svc-client";
 import { Converse } from "converse.svc-client";
+import { nanoid } from "nanoid";
 import { toast } from "sonner";
 import type { MessageInterface, MetaInterface } from "types/chat";
-import { chatStore, type ChatState, type Setters } from "zustand/store";
+import { chatStore } from "zustand/store";
 
 interface IChatSocket {
   init: () => Promise<void>;
@@ -24,8 +25,6 @@ interface IChatSocket {
 }
 
 class ChatSocket implements IChatSocket {
-  private store: ChatState;
-  private dispatch: Setters;
   channel: Channel | null = null;
   projectInstance: Project | null = null;
   private converse: Converse | null = null;
@@ -35,9 +34,12 @@ class ChatSocket implements IChatSocket {
   private maxRetries = 5;
   private retryCount = 0;
 
-  constructor() {
-    this.store = chatStore.getState();
-    this.dispatch = chatStore.getState();
+  private get store() {
+    return chatStore.getState();
+  }
+
+  private get dispatch() {
+    return chatStore.getState();
   }
 
   async init() {
@@ -116,20 +118,28 @@ class ChatSocket implements IChatSocket {
   }
 
   handleNewProjectMessage(msg: {
-    message: string;
-    sid: string;
-    name: string;
-    meta: MetaInterface;
-    creationTime: string;
+    message: {
+      message: string;
+      sid: string;
+      name: string;
+      meta: MetaInterface;
+      creationTime: string;
+    };
   }) {
-    if (msg?.sid === this.store.userDetails._id) return;
+    const { sid, meta, creationTime } = msg.message;
+    if (
+      sid === this.store.userDetails._id ||
+      meta?.converseId === this.channelId
+    )
+      return;
     this.dispatch.addMessage(
       {
-        ...msg,
-        sender_id: msg.sid,
-        createdAt: msg.creationTime || new Date().toISOString(),
+        ...msg.message,
+        sender_id: sid,
+        createdAt: creationTime || new Date().toISOString(),
+        _id: nanoid(16),
       } as any,
-      msg?.meta?.converseId
+      meta?.converseId
     );
   }
 

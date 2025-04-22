@@ -18,3 +18,18 @@ export const VerifyConverseToken = (body: {
 
 export const RequestConverseToken = () =>
   API.get(`${API.USERS}/request-converse-token`) as Promise<any>;
+
+export const GetUserToken = (username: string) => {
+  return API.get(
+    API.USERS + "/user-name" + `/${username}`,
+    {},
+    false
+  ) as Promise<{
+    data: [
+      {
+        _id: string;
+        token: string;
+      }
+    ];
+  }>;
+};
