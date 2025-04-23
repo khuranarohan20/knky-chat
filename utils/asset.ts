@@ -56,7 +56,9 @@ export function getAssetUrl({
           !["Preview", "Poster"].includes(media.used_as);
 
     const url = `${
-      isPrivate ? process.env.private_asset : process.env.public_asset
+      isPrivate
+        ? import.meta.env.KNKY_PRIVATE_ASSET
+        : import.meta.env.KNKY_PUBLIC_ASSET
     }/${name}_${variation}.${ext}${
       (poster ? media?.poster : media)?.signature?.[variation] || ""
     }`;
