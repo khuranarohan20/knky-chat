@@ -1,7 +1,6 @@
 import { GetChatList } from "api/chat";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { Dot } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import type { Chat, MessageInterface } from "types/chat";
 import { getAssetUrl } from "utils/asset";
@@ -15,8 +14,6 @@ import ChatListTabs from "./ChatListTabs";
 
 const ChatList = () => {
   const dispatch = useAppDispatch().chatActions;
-  const navigate = useNavigate();
-  const { id: targetUserId } = useParams();
 
   const {
     chatList: list,
@@ -51,27 +48,10 @@ const ChatList = () => {
           return bTime - aTime;
         });
       dispatch.setChatList(chatList);
-
-      let targetChat;
-
-      if (targetUserId) {
-        targetChat = chatList.find(
-          (chat) =>
-            chat?.initiator?._id === targetUserId ||
-            chat?.target?._id === targetUserId
-        );
-        if (targetChat) {
-          dispatch.setActiveChat(targetChat);
-          dispatch.setActiveChannelId(targetChat.converse_channel_id);
-        }
-      } else {
-        targetChat = chatList?.[0];
-        dispatch.setActiveChat(chatList?.[0]);
-        dispatch.setActiveChannelId(chatList?.[0].converse_channel_id);
-      }
-
+      dispatch.setActiveChat(chatList?.[0]);
+      dispatch.setActiveChannelId(chatList?.[0].converse_channel_id);
       const promise = chatSocket.updateChannel(
-        targetChat?.converse_channel_id || chatList?.[0]?.converse_channel_id
+        chatList?.[0]?.converse_channel_id
       );
       toast.promise(promise, {
         loading: "Connecting...",
@@ -89,22 +69,13 @@ const ChatList = () => {
       console.log(error);
       toast.error(error.message);
     }
-  }, [targetUserId]);
+  }, []);
 
   async function handleChatClick(chat: Chat) {
     if (chat === activeChat) return;
 
     dispatch.setActiveChat(chat);
     dispatch.setActiveChannelId(chat.converse_channel_id);
-
-    await navigate(
-      `/chat/${
-        chat?.initiator?._id === myUserId
-          ? chat?.target?._id
-          : chat?.initiator?._id
-      }`
-    );
-
     const promise = chatSocket.updateChannel(chat.converse_channel_id);
     toast.promise(promise, {
       loading: "Connecting...",
