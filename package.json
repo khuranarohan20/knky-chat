@@ -3,10 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "dev": "pnpm --filter @knky-chat/app dev",
+    "build": "pnpm -r build",
+    "build:packages": "pnpm --filter './packages/**' build",
+    "build:app": "pnpm --filter @knky-chat/app build",
+    "test": "pnpm -r test",
+    "test:watch": "pnpm -r test:watch",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "rm -rf node_modules packages/*/node_modules apps/*/node_modules",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build:packages && changeset publish"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.7",
@@ -36,6 +44,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
     "@react-router/dev": "^7.5.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/lodash": "^4.17.16",
@@ -47,5 +56,9 @@
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }
