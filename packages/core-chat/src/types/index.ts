@@ -127,6 +127,7 @@ export interface MetaInterface {
   channel_id?: string;
   tag_name?: string;
   subscription_type?: string;
+  seen_by?: SeenReceipt[];
 }
 
 interface AddressMetaInterface {
@@ -389,4 +390,14 @@ export interface Media {
   type: string;
   width?: number;
   height?: number;
+}
+
+/**
+ * Seen receipt type
+ */
+export interface SeenReceipt {
+  user_id: string;
+  timestamp: string;
+  message_id: string;
+  channel_id: string;
 }
