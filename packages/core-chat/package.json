@@ -24,10 +24,8 @@
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
-    "axios": "^1.6.0"
-  },
-  "peerDependencies": {
-    "converse.svc-client": "^0.0.2"
+    "axios": "^1.6.0",
+    "converse.svc-client": "file:../../extra-modules/converse.svc-client-0.15.0.tgz"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

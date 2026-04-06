@@ -26,9 +26,6 @@
   "dependencies": {
     "@knky-chat/core-chat": "workspace:*"
   },
-  "peerDependencies": {
-    "converse.svc-client": "^0.0.2"
-  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.7.2",
