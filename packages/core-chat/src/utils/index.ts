@@ -250,7 +250,7 @@ export namespace MessageUtils {
   export function calculateReadStatus(message: MessageInterface): 'read' | 'delivered' | 'sent' {
     if (!message.meta) return 'sent';
 
-    const hasReadReceipt = message.meta.seen_by?.length > 0;
+    const hasReadReceipt = (message.meta.seen_by?.length ?? 0) > 0;
     return hasReadReceipt ? 'read' : 'delivered';
   }
 }

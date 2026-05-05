@@ -2,6 +2,7 @@
 // Platform-agnostic socket management for chat functionality
 
 import type { MessageInterface, MetaInterface } from '../types';
+import { MESSAGE_FETCH_LIMIT } from '../constants';
 
 export interface ChatConnectionConfig {
   projectId: string;
@@ -36,11 +37,6 @@ export interface IChatConnection {
   updateChannel(channelId: string): Promise<void>;
   setMessageHandlers(handlers: MessageHandlers): void;
 }
-
-/**
- * Message fetch limit constant
- */
-export const MESSAGE_FETCH_LIMIT = 50;
 
 /**
  * Abstract base class for chat connection implementations
@@ -156,10 +152,9 @@ export abstract class BaseChatConnection implements IChatConnection {
   protected setupChannelListeners(): void {
     if (!this.channel) return;
 
-    this.channel.listenMessage((message: MessageInterface) => {
-      // Filter out own messages and duplicates
-      if (this.shouldHandleMessage(message)) {
-        this.messageHandlers.onNewMessage?.(message);
+    this.channel.listenMessage((_message: MessageInterface) => {
+      if (this.shouldHandleMessage(_message)) {
+        this.messageHandlers.onNewMessage?.(_message);
       }
     });
   }
@@ -167,8 +162,7 @@ export abstract class BaseChatConnection implements IChatConnection {
   /**
    * Check if message should be handled
    */
-  protected shouldHandleMessage(message: MessageInterface): boolean {
-    // To be implemented based on platform logic
+  protected shouldHandleMessage(_message: MessageInterface): boolean {
     return true;
   }
 
@@ -299,9 +293,8 @@ export abstract class BaseChatConnection implements IChatConnection {
  * Factory function to create chat connection with platform-specific Converse client
  */
 export function createChatConnection(
-  converseClient: any,
-  platformUserId: string
+  _converseClient: any,
+  _platformUserId: string
 ): IChatConnection {
-  // Platform-specific adapter should implement this
   throw new Error('Platform-specific adapter must provide createChatConnection implementation');
 }

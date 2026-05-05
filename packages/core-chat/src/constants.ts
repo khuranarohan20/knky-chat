@@ -1,0 +1,11 @@
+export const CORE_CREATOR_ID = "__core__" as const;
+export const MESSAGE_FETCH_LIMIT = 50;
+export const CHAT_LIST_FETCH_LIMIT = 50;
+export const FLUSH_MS_CORE = 100;
+export const FLUSH_MS_AGENCY = 120;
+export const MAX_PIN_CORE = 20;
+export const MAX_PIN_AGENCY = 5;
+export const VIRTUOSO_BASE = 2_000_000;
+export const EMBED_CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+export const OFFLINE_REMOVAL_DELAY = 30_000; // 30 seconds
+export const SESSION_INACTIVITY_MS = 90_000; // 90 seconds

@@ -11,6 +11,16 @@ export interface ChatApiConfig {
 export interface ChatListParams {
   page?: number;
   limit?: number;
+  is_human?: boolean;
+  is_unread?: boolean;
+  is_read?: boolean;
+  is_active?: boolean;
+  is_shy?: boolean;
+  is_online?: boolean;
+  min_spent_amount?: number;
+  max_spent_amount?: number;
+  channel_ids?: string[];
+  req_search?: string | string[];
 }
 
 export interface ChatListResponse {
@@ -68,7 +78,7 @@ export class ChatApiClient implements IChatApiClient {
       throw new Error(`API request failed: ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   async post<T>(url: string, body: any): Promise<T> {
@@ -82,7 +92,7 @@ export class ChatApiClient implements IChatApiClient {
       throw new Error(`API request failed: ${response.statusText}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   async getChatList(params: ChatListParams = {}): Promise<ChatListResponse> {

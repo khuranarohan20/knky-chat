@@ -18,6 +18,10 @@ export interface MessageInterface {
   updatedAt: string;
   message_id?: string;
   display_name?: string;
+  isHuman: boolean;
+  receipts: Receipt[];
+  seen_count: number;
+  tags: string[];
 }
 
 export interface ChatFeeInterface {
@@ -64,7 +68,9 @@ export interface MetaInterface {
     | "CUSTOM-SERVICE"
     | "SET-PRICE"
     | "EMBEDS"
-    | "MASS-MESSAGE";
+    | "MASS-MESSAGE"
+    | "TAG-APPROVAL"
+    | "NEW-PAYMENT";
   sub_type?: "POST" | "PRODUCT" | "CHANNEL" | "GROUP";
   subtype?: "VIDEO" | "VOICE" | "RATING" | "CUSTOM-SERVICE" | "";
   requestAccept?: true | false | "sent";
@@ -128,6 +134,10 @@ export interface MetaInterface {
   tag_name?: string;
   subscription_type?: string;
   seen_by?: SeenReceipt[];
+  sent_by?: "agency" | "creator";
+  emp?: string;
+  is_mass_message?: true;
+  reactions?: { emote: string; userId: string; channel_id?: string }[];
 }
 
 interface AddressMetaInterface {
@@ -185,6 +195,18 @@ export interface Chat {
     available_message: number;
     _id: string;
   }[];
+  free_perks?: { type: "FREE-SUB-CHAT"; expires_on: string };
+  notes?: Record<string, string>;
+  is_pinned?: Record<string, boolean>;
+  total_spent?: Record<string, number>;
+  mark_as_unread: boolean;
+  lastHumanMessage?: MessageInterface;
+  lastNonHumanMessage?: MessageInterface;
+  totalSpentAmount: number;
+  latest_payment_msg_timestamp?: Record<string, string>;
+  lastSeenMessage?: MessageInterface;
+  unreadCount: number;
+  tags: string[];
 }
 
 export interface ChatFeeResponse {
@@ -292,10 +314,6 @@ export type UserBadge =
 
 export type SubscriptionBadge = "CreatorPro" | "Prime";
 
-// Removed duplicate type definitions
-export type SecondBadgePriority = "AffiliatedWithKnky" | "Prime";
-
-// Removed duplicate type definitions
 export type SecondBadgePriority = "AffiliatedWithKnky" | "Prime";
 
 export interface MinSubscription {
@@ -394,4 +412,111 @@ export interface SeenReceipt {
   timestamp: string;
   message_id: string;
   channel_id: string;
+}
+
+/**
+ * Receipt type (seen receipt from socket — dual format)
+ */
+export interface Receipt {
+  userId?: string;
+  user_id?: string;
+  status: string;
+  timestamp?: string;
+  time?: string;
+  message_id?: string;
+}
+
+/**
+ * Converse tag type enum
+ */
+export enum ConverseTagType {
+  FollowerXSubscriber = "FollowerXSubscriber",
+  SubscriberXFollower = "SubscriberXFollower",
+  ExpiredSubscriber = "ExpiredSubscriber",
+  Following = "Following",
+  Subscribed = "Subscribed",
+  MatchProfile = "MatchProfile",
+}
+
+/**
+ * Filter interface for chat list filtering
+ */
+export interface FilterInterface {
+  readStatus?: "all" | "read" | "unread" | "online";
+  conversationStatus?: "all" | "active" | "shy";
+  fanType?: "all" | ConverseTagType[];
+  spendRanks?: "all" | { min: number; max: number };
+}
+
+/**
+ * Chat stats
+ */
+export interface ChatStatsInterface {
+  spent_amount?: number;
+  tips_amount?: number;
+  subscriptions?: any[];
+  notes?: string;
+  transactions?: any[];
+}
+
+/**
+ * Pin message response
+ */
+export interface PinMessageResponse {
+  pinnedMsg: Array<{
+    _id: string;
+    messageId: string;
+    channel_id: string;
+    message: string;
+    meta: MetaInterface;
+    createdAt: string;
+    pinId: string;
+    pinnedBy: string;
+  }>;
+}
+
+/**
+ * Converse member pair (userId <-> channelId mapping)
+ */
+export interface ConversePair {
+  user_id: string;
+  channel_id: string;
+}
+
+/**
+ * Chat list count for tabs
+ */
+export interface ChatListCountInterface {
+  count: number;
+  unread: number;
+}
+
+/**
+ * Chat tab
+ */
+export interface ChatTab {
+  title: string;
+  is_enabled: boolean;
+  _id: string;
+  users_count: number;
+}
+
+/**
+ * Send message params
+ */
+export interface SendMessageParams {
+  channelId: string;
+  message?: string;
+  meta?: Partial<MetaInterface>;
+  media?: Media[];
+  vault_media_ids?: string[];
+}
+
+/**
+ * Get messages params
+ */
+export interface GetMessagesParams {
+  time?: string;
+  reversePaginate?: boolean;
+  fetchAll?: boolean;
 }
