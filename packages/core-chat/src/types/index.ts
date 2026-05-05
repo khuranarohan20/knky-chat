@@ -292,16 +292,10 @@ export type UserBadge =
 
 export type SubscriptionBadge = "CreatorPro" | "Prime";
 
-export type FirstBadgePriority =
-  | "CreatorPro"
-  | "VerifiedCreator"
-  | "VerifiedUser";
+// Removed duplicate type definitions
 export type SecondBadgePriority = "AffiliatedWithKnky" | "Prime";
 
-export type FirstBadgePriority =
-  | "CreatorPro"
-  | "VerifiedCreator"
-  | "VerifiedUser";
+// Removed duplicate type definitions
 export type SecondBadgePriority = "AffiliatedWithKnky" | "Prime";
 
 export interface MinSubscription {
