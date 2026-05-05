@@ -25,6 +25,9 @@
   },
   "dependencies": {
     "@knky-chat/business-logic": "workspace:*",
+    "@knky-chat/core-chat": "workspace:*",
+    "immer": "^10.1.1",
+    "zustand": "^5.0.3",
     "@radix-ui/react-dialog": "^1.1.7",
     "@radix-ui/react-dropdown-menu": "^2.1.7",
     "@radix-ui/react-scroll-area": "^1.1.0",

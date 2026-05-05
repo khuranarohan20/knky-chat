@@ -9,9 +9,14 @@
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "paths": {
-      "@knky-chat/business-logic": ["../business-logic/src"]
+      "@knky-chat/business-logic": ["../business-logic/src/index.ts"],
+      "@knky-chat/core-chat": ["../core-chat/src/index.ts"]
     }
   },
+  "references": [
+    { "path": "../core-chat" },
+    { "path": "../business-logic" }
+  ],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }
