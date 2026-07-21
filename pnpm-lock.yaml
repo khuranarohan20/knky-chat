@@ -144,6 +144,12 @@ importers:
       '@knky-chat/adapters':
         specifier: workspace:*
         version: link:../../packages/adapters
+      '@knky-chat/chat-ui':
+        specifier: workspace:*
+        version: link:../../packages/chat-ui
+      '@knky-chat/core-chat':
+        specifier: workspace:*
+        version: link:../../packages/core-chat
       '@radix-ui/react-dialog':
         specifier: ^1.1.7
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
