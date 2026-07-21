@@ -7,3 +7,13 @@ export { ChatList } from './chat/ChatList';
 export { ChatListTabs } from './chat/ChatListTabs';
 export { ChatPerson } from './chat/ChatPerson';
 export { MediaRenderer } from './chat-variations/MediaRenderer';
+export type { ChatBubblesProps } from './chat/ChatBubbles';
+
+// Message rendering (polymorphic router + bubble variations)
+export { RenderMessage } from './messages/RenderMessage';
+export type { RenderMessageProps } from './messages/RenderMessage';
+export { MessageBubble } from './messages/MessageBubble';
+export { BubbleTime } from './messages/BubbleTime';
+export { TextBubble } from './messages/bubbles/TextBubble';
+export { MediaAttachment } from './messages/bubbles/MediaAttachment';
+export { SentTip } from './messages/bubbles/SentTip';
