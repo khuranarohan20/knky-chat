@@ -646,26 +646,43 @@ export const useChatStore = create<ChatStore>()(
 );
 
 // ---------------------------------------------------------------------------
-// Typed selector hooks — avoids re-render when unrelated state changes
+// Typed selector hooks — avoids re-render when unrelated state changes.
+//
+// IMPORTANT: fallbacks MUST be stable module-level references. Returning a
+// fresh `[]` / `{}` / `new Set()` from a selector on every call makes Zustand's
+// useSyncExternalStore snapshot change identity every render → infinite loop
+// ("getSnapshot should be cached"). Use the shared constants below.
 // ---------------------------------------------------------------------------
 
+const EMPTY_CHATS: Chat[] = [];
+const EMPTY_MESSAGES: MessageInterface[] = [];
+const EMPTY_PINS: PinnedMessage[] = [];
+const EMPTY_ONLINE: Set<string> = new Set<string>();
+const DEFAULT_FILTER: FilterInterface = {
+  readStatus: 'all',
+  conversationStatus: 'all',
+  fanType: 'all',
+  spendRanks: 'all',
+};
+const DEFAULT_MORE: { upwards: boolean; downwards: boolean } = { upwards: false, downwards: false };
+
 export const useChatList = (creatorId: string) =>
-  useChatStore((s) => s.chatDataByCreator[creatorId]?.chatList ?? []);
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.chatList ?? EMPTY_CHATS);
 
 export const useActiveMessages = (creatorId: string) =>
   useChatStore((s) => {
     const d = s.chatDataByCreator[creatorId];
-    return d ? (d.completeMessagesByChatId[d.activeChannelId] ?? []) : [];
+    return d ? (d.completeMessagesByChatId[d.activeChannelId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES;
   });
 
 export const usePinnedMessages = (creatorId: string, channelId: string) =>
-  useChatStore((s) => s.chatDataByCreator[creatorId]?.pinnedMessagesByChatId[channelId] ?? []);
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.pinnedMessagesByChatId[channelId] ?? EMPTY_PINS);
 
 export const useMessagesLoading = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.isMessagesLoading ?? false);
 
 export const useMoreMessagesLoading = (creatorId: string) =>
-  useChatStore((s) => s.chatDataByCreator[creatorId]?.loadingMoreMessages ?? { upwards: false, downwards: false });
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.loadingMoreMessages ?? DEFAULT_MORE);
 
 export const useTargetPerson = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.targetPerson ?? null);
@@ -674,10 +691,10 @@ export const useActiveChannelId = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.activeChannelId ?? '');
 
 export const useChatFilter = (creatorId: string) =>
-  useChatStore((s) => s.chatDataByCreator[creatorId]?.filter ?? { readStatus: 'all', conversationStatus: 'all', fanType: 'all', spendRanks: 'all' });
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.filter ?? DEFAULT_FILTER);
 
 export const useTotalUnreadCount = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.totalUnreadCount ?? 0);
 
 export const useOnlineUsers = (creatorId: string) =>
-  useChatStore((s) => s.chatDataByCreator[creatorId]?.onlineUsers ?? new Set<string>());
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.onlineUsers ?? EMPTY_ONLINE);
