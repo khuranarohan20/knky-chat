@@ -1,4 +1,3 @@
-// Chat UI Hooks exports
-
-export { default as useAsyncEffect } from './useAsyncEffect';
-export { default as useDeepCompareEffect } from './useDeepCompareEffect';
+// Phase 6: hook implementations
+export { useAsyncEffect } from './useAsyncEffect';
+export { useDeepCompareEffect } from './useDeepCompareEffect';

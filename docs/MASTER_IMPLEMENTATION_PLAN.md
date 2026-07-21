@@ -6,6 +6,95 @@
 
 ---
 
+## 2026-07-21 REFRESH — Current Reality, Decisions & Remaining Work
+
+> **This section is authoritative and supersedes any conflicting claim below.**
+> Written after re-analyzing both live source repos (knky-frontend @ `4ce4f12c4`, ~413 commits
+> since the 2026-05-05 baseline; knky-agency-frontend @ `053d717`, ~23 commits) and verifying
+> the actual build state of this monorepo. The phase sections further down remain useful as
+> detail but predate these decisions — read them through the corrections here.
+
+### Verified build state (this monorepo)
+
+- **3 library packages build + typecheck clean**: `@knky-chat/core-chat`, `@knky-chat/chat-ui`, `@knky-chat/adapters`. Build them with `pnpm --filter './packages/**' build`.
+- **`@knky-chat/business-logic` — DROPPED.** It was imported by zero source files; its manager logic (MessageHandler/SeenManager/PinManager, state adapters) already lives in the store + adapter layer. It was also the only package failing the build.
+- **Fixed:** root `package.json` was missing the `packageManager` field → `turbo run build` was fully broken. Now `"pnpm@10.33.0"`.
+- **Known non-blocker:** `apps/current-app` is an empty React Router scaffold (no `app/root.tsx`) and fails `react-router build`. It is not a deliverable. Either build it out into a real dev playground later or remove it; do not let it gate the library build.
+- Large in-flight WIP that already typechecks: `chat-ui/src/store/chatStore.ts` (Zustand), `ChatProvider.tsx`, `adapter/` (AdapterContext + types), `bridge/SocketEventBridge.ts`; `adapters/src/{core/CoreAdapter,agency/AgencyAdapter}.ts`; `core-chat/src/{socket/ChatConnection,socket/ConnectionManager,seen/SeenReceiptQueue}`.
+
+### Architecture decisions (ratified 2026-07-21)
+
+1. **State layer = Zustand** (NOT Redux Toolkit). The docs specified RTK only because they mirrored the source apps' *internal* stores. For an embeddable micro frontend Zustand is the better fit: no `<Provider>`/store collision with the host app's own Redux store, no `redux` peerDependency coupling, ~1KB, and a single store holding the canonical nested `chatDataByCreator` map gives per-creator isolation with no ceremony. Persistence via Zustand `persist` middleware (replaces redux-persist / the per-creator localStorage logic).
+   - **Canonical store:** `packages/chat-ui/src/store/chatStore.ts`.
+   - **Everywhere below that says "Redux slice / reducers / selectors / `createChatStore` / `configureStore` / dispatch actions" — read it as the equivalent Zustand store / actions / selectors.** The action *names* and state *shape* still apply; only the mechanism changed.
+   - **Guardrails:** (a) SSR (Next.js/knky-frontend) — the store must be created client-side per session (`ChatProvider` + `'use client'`); never seed module-level state with request data. (b) Dedupe Zustand so host and library don't bundle two copies.
+2. **3 packages, not 4:** `core-chat` → `chat-ui` → `adapters`. Drop the `redux`/`react-redux`/`redux-persist` peerDeps from the spec.
+3. **Nested-by-creator canonical state + `"__core__"` sentinel for core — unchanged, still correct.**
+
+### Refreshed source facts (fold into porting)
+
+**Message types — the `meta.type` union has GROWN. Port all of these bubbles:**
+- Core added: **`REQUEST-TIP`** (new `request-tip/` bubble subtree + modal), **`chat-unlock`** (`ChatUnlockBubble`), **`NEW-PAYMENT`** (`NewPayment`). Live rating bubble is **`RatingRequestNew`** (legacy `RatingRequest` is dead).
+- Full union now: `ACCEPT_CALL, RATING, VIDEO, VOICE, message, direct-message, auto-message, chat-unlock, message-attachment, stream, story-reply, SENT-TIP, CUSTOM-SERVICE, SET-PRICE, EMBEDS, MASS-MESSAGE, TAG-APPROVAL, NEW-PAYMENT, REQUEST-TIP`.
+- Core bubbles are now two-tiered: thin wrappers in `bubble-variations/` delegate into a `chatbox-utils/` subtree. The shared package can flatten this — one component per type is fine.
+
+**Socket layer — the core app's socket was rewritten as a resilient singleton; the library's `ChatConnection` must match this (not the naive version the old plan described):**
+- Generation-guarded init; ~15s connect timeout; bounded exponential-backoff auto-reconnect (max ~5); raw-socket connection watchers keeping `isSocketConnected` truthful and auto-reopening the last channel; `ensureConnected()`; channel-connect retries with backoff.
+- **Channel-bound outbound send queue** (each send bound to the channel active at enqueue time — prevents paid-DM misdelivery on chat switch), with per-item TTL (~60s) + dead-letter after ~5 retries + toast.
+
+**Seen receipts — CHANGED (the "100ms" non-negotiable is outdated):**
+- Core now runs a **~5s flush loop** (`flushSeenQueue`) that decrements per-channel unread; **open-time / scroll bulk-seen is disabled**; only inbound messages in the currently-open channel get an immediate `seenMessage`. `seenMessageAll` is not called.
+- Agency uses ~120ms. Make the flush cadence adapter-config, not a hardcoded "100 vs 120".
+
+**Constants — CORRECTED:**
+- `MAX_PIN_ALLOWED` is now **5 in BOTH** platforms for chat-list pins (core dropped 20→5). Message-pin *fetch* limit stays 20. Keep it adapter-config but the default for both is 5.
+- Core `FLUSH_MS` is now 120 (was 100) — plus the separate 5s seen-decrement loop above.
+- Core socket: `CONNECT_TIMEOUT_MS=15000`, `MAX_INIT_RETRIES=5`, `QUEUE_ITEM_TTL_MS=60000`, `MAX_SEND_RETRIES=5`, seen-flush 5000ms, offline-prune 30000ms. `BASE=2,000,000`.
+- Agency: `MIN_MEDIA_PRICE` 5→**1**, `MAX_MEDIA_PRICE=10000`, `ATTACHMENT_MAX_DURATION=600s`, `BASE_VIRTUOSO_LIMIT_MESSAGES=100000`.
+
+**Send-gating — port the pure, tested modules (don't reinvent):**
+- Core extracted `isChatEnabled.ts` (`getChatServiceStatus(+Cached)`, `isActiveBuyer` with OneOff-never-expires rule) and `chatSendGuard.ts` (`canSendDirectMessage()` → `{allow}` | `{allow:false, action:"OPEN_MODAL", reason}`), with `__tests__/isChatEnabled.test.ts`. These are the canonical gating logic.
+
+**New/changed APIs to include:** message-template CRUD (+ `/category`), custom-fan-list CRUD, media-consent / tag-approval (`ApprovalConsent`, `GetTagDetails`), `purchase-media` v2, promotional respond, `POST /users/get-message-unread-count`. Several paths renamed (chatting-fee, `converse-channel/:id/stats`, `clear-userchat`). Agency `SharePayload` gained `auto_expire_after_duration(_type)` and `FetchFansListV2` (paginated).
+
+**Agency corrections (old analysis doc was wrong):**
+- Socket class is **`ChatConnection(creatorId, token)`** (not `ChatSocket`), file `src/utils/chat-socket.ts`; manager `connectionManager.ts`.
+- The doc's selector list was largely fictional — there are ~15 real selectors and most component access is inline `useAppSelector`.
+- Outbound `meta.emp` encodes `{ id: user.id, name: user.profile.username }` (not agent name); `meta.sent_by: "agency"` at the socket layer.
+- Per-creator token renewal is `ensureCreatorTokenRenewal(creatorId)` (AES-decrypt via `crypto-js` + `KNKY_DECRYPT_KEY`).
+- `CreatorChatState` includes `seenMessages: ReceiptStore` (doc omitted it).
+
+**DO NOT PORT (dead/broken in source):**
+- Core `useChatNotification` (never imported; dispatches non-existent `setPrevChat`/`setCurrentChat`), legacy `RatingRequest.tsx`, and `TAG-APPROVAL` (in the type union but has no case in the live router — falls to plain text).
+- Agency online/offline handlers that read `store.getState().chat[creatorId]` instead of `chat.chatDataByCreator[creatorId]` and dispatch `setChatList` with `creatorId: user.id`. Replicate the *corrected* nested access instead.
+
+### Corrected non-negotiables (supersedes the "Non-Negotiables" list below)
+
+1. Message dedup: `_id || messageId`. ✅ (unchanged)
+2. Receipt field normalization: `r.userId || r.user_id`. ✅ (unchanged)
+3. Virtuoso BASE offset = 2,000,000 (core). ✅ (unchanged)
+4. **Seen receipts: ~5s flush-decrement loop (core) + ~120ms (agency), adapter-configurable — NOT a 100ms debounce.**
+5. **Pin limit default = 5 for BOTH (chat-list pins); message-pin fetch limit 20. Adapter-configurable.**
+6. Agency outbound meta: `sent_by:"agency"` + `emp = btoa({id, name: profile.username})`. ✅
+7. AES token decryption for agency (`crypto-js` + `KNKY_DECRYPT_KEY`). ✅
+8. Per-creator persistence via Zustand `persist` (was per-creator localStorage). 
+9. 30s offline removal window. ✅
+10. Embed 4h cache. ✅
+11. **Socket resilience: generation-guarded init, connect timeout, backoff reconnect, channel-bound send queue with TTL + dead-letter.** (new)
+
+### Remaining work (revised roadmap)
+
+Given what's actually built (core-chat socket/queue/seen, Zustand `chatStore`, both adapters, bridge, provider — all typecheck), the real remaining work is:
+
+1. **Wire + smoke-test end-to-end.** Nothing exercises the adapter → provider → bridge → store path at runtime yet. Stand up a minimal harness (or build out `apps/current-app`) and drive: init → chat list → open chat → send/receive → seen → pin.
+2. **UI components.** Port message bubbles (now incl. `REQUEST-TIP`, `chat-unlock`, `NEW-PAYMENT`), the polymorphic `RenderMessage` router, `ChatBubbles` (Virtuoso, BASE=2M), `ChatBar`, `ChatList` (+tabs/filters), `ChatPerson`, `ChatStats`, `MediaGallery`, shimmers — Tailwind + shadcn.
+3. **Hooks over the Zustand store:** `useChat`, `useShowChat`, `useMessageSend`, `useSeenManager`, `usePinManager` (+ optional core-only `useChatServiceStatus`).
+4. **Tests:** seen-flush batching, dedup, ConnectionManager, adapter creator-isolation, send-gating (port the existing `isChatEnabled` test).
+5. **Integration** into both host apps behind a `USE_NEW_CHAT` flag (see Phase 10 below).
+6. **Housekeeping:** build out or remove `apps/current-app`; drop stale `redux*` deps from specs.
+
+---
+
 ## Reality Check First
 
 The existing knky-chat packages are **scaffolding, not implementation**. They have the right structure but the actual code inside is placeholder-level. The types are simplified, Redux is not wired to anything real, and the UI components are shells. This plan treats the project as starting from verified scaffolding with the correct directory structure already in place.

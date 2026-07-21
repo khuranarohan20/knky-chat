@@ -259,6 +259,9 @@ importers:
       '@knky-chat/chat-ui':
         specifier: workspace:*
         version: link:../chat-ui
+      '@knky-chat/core-chat':
+        specifier: workspace:*
+        version: link:../core-chat
       react:
         specifier: ^18.0.0 || ^19.0.0
         version: 19.2.4
@@ -282,27 +285,8 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.39)(lightningcss@1.32.0)
 
-  packages/business-logic:
-    dependencies:
-      '@knky-chat/core-chat':
-        specifier: workspace:*
-        version: link:../core-chat
-    devDependencies:
-      '@types/node':
-        specifier: ^20.0.0
-        version: 20.19.39
-      typescript:
-        specifier: ^5.7.2
-        version: 5.9.3
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(@types/node@20.19.39)(lightningcss@1.32.0)
-
   packages/chat-ui:
     dependencies:
-      '@knky-chat/business-logic':
-        specifier: workspace:*
-        version: link:../business-logic
       '@knky-chat/core-chat':
         specifier: workspace:*
         version: link:../core-chat

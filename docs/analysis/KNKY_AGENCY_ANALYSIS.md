@@ -6,6 +6,19 @@
 
 ---
 
+> ### ⚠️ 2026-07-21 REFRESH — corrections to the 2026-05-05 baseline below
+> Re-analyzed @ `053d717` (~23 commits since). Architecture shape unchanged (nested per-creator state, per-creator sockets, agency tagging), but the baseline had factual errors. Full narrative in `docs/MASTER_IMPLEMENTATION_PLAN.md` → "2026-07-21 REFRESH".
+> **Corrections (baseline was wrong):**
+> - Socket class is **`ChatConnection(creatorId, token)`** (`src/utils/chat-socket.ts`), NOT `ChatSocket(creatorId)`. Manager: `connectionManager.ts` (`Map<creatorId, ChatConnection>`).
+> - §4 selector list is largely **fictional** — actual ~15 selectors (`selectChatListByCreator`, `selectActiveChat`, `selectSortedChatListByLastMessage`, `selectUnreadChats`, …); most access is inline `useAppSelector`.
+> - `CreatorChatState` includes **`seenMessages: ReceiptStore`** (omitted in §1).
+> - Outbound `meta.emp` = `btoa({ id: user.id, name: user.profile.username })` (not agent name).
+> - `useShowChat()` takes **no arg** (reads `currentCreatorId`); `useBlockUser`'s `isLoading` is a per-user function `(userId)=>boolean`.
+> **Deltas since baseline:** per-creator token renewal now `ensureCreatorTokenRenewal(creatorId)` (AES via `crypto-js`+`KNKY_DECRYPT_KEY`) + Vitest suite; `MIN_MEDIA_PRICE` 5→**1**, `MAX_MEDIA_PRICE=10000`; "Pay-to-view/PTV" relabeled **"Clips"** (value still `Premium`); `DeleteMassMessage` path → `/mass-message/delete/:id`; new APIs `GetMessageTemplateCatogories`, `FetchFansListV2`, `SharePayload.auto_expire_after_duration(_type)`.
+> **Known latent bug (don't replicate):** online/offline handlers in `chat-socket.ts` read `store.getState().chat[creatorId]` instead of `chat.chatDataByCreator[creatorId]` and dispatch `setChatList` with `creatorId: user.id` — broken against the nested state shape.
+
+---
+
 ## 1. REDUX STATE — Full ChatState Shape
 
 The agency uses **nested state** — all chat data is scoped under `chatDataByCreator[creatorId]`:

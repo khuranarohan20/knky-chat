@@ -17,6 +17,12 @@ out/
 
 # ─── TypeScript ───────────────────────────────────────────────────────────────
 *.tsbuildinfo
+# Compiled output must never land in src/ (belongs in dist/). Guards against
+# stray `tsc` runs that emit next to sources. src/ holds .ts/.tsx/.css only.
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
 
 # ─── Env files ────────────────────────────────────────────────────────────────
 .env

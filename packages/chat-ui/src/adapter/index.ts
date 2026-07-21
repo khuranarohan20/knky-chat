@@ -1,5 +1,3 @@
-export { CoreAdapter } from './core';
-export { AgencyAdapter } from './agency';
 export type {
   IPlatformAdapter,
   ChatFeatures,
@@ -9,3 +7,4 @@ export type {
   CoreAuthConfig,
   AgencyAuthConfig,
 } from './types';
+export { AdapterProvider, useAdapter, useOptionalAdapter } from './AdapterContext';

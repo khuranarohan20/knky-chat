@@ -17,6 +17,26 @@ import type { ChatConnectionCallbacks, ChatConnectionConfig } from './ChatConnec
 export class ConnectionManager {
   private connections = new Map<string, ChatConnection>();
 
+  /**
+   * Create and register a connection WITHOUT initializing it.
+   *
+   * Use this when callbacks must be attached before `init()` runs (e.g. the
+   * SocketEventBridge, which needs the connection instance to build its
+   * callbacks). Returns the existing connection if one is already registered.
+   *
+   *   const conn = manager.create(creatorId);
+   *   const bridge = new SocketEventBridge(conn, ...); bridge.mount();
+   *   await conn.init(config); // onReady + bootstrap events now reach the bridge
+   */
+  create(creatorId: string): ChatConnection {
+    const existing = this.connections.get(creatorId);
+    if (existing) return existing;
+
+    const conn = new ChatConnection();
+    this.connections.set(creatorId, conn);
+    return conn;
+  }
+
   async init(
     creatorId: string,
     config: ChatConnectionConfig,

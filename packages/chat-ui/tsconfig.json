@@ -8,15 +8,11 @@
     "declarationMap": true,
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "baseUrl": ".",
     "paths": {
-      "@knky-chat/business-logic": ["../business-logic/src/index.ts"],
-      "@knky-chat/core-chat": ["../core-chat/src/index.ts"]
+      "~/*": ["src/*"]
     }
   },
-  "references": [
-    { "path": "../core-chat" },
-    { "path": "../business-logic" }
-  ],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }

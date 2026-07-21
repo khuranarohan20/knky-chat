@@ -6,6 +6,18 @@
 
 ---
 
+> ### ⚠️ 2026-07-21 REFRESH — corrections to the 2026-05-05 baseline below
+> Re-analyzed @ `4ce4f12c4` (~413 commits since). The body below is the older baseline; the deltas here take precedence. Full narrative in `docs/MASTER_IMPLEMENTATION_PLAN.md` → "2026-07-21 REFRESH".
+> - **New `meta.type`s:** `REQUEST-TIP`, `chat-unlock`, `NEW-PAYMENT` (new bubbles). Live rating bubble is `RatingRequestNew`; `RatingRequest.tsx` is dead.
+> - **Socket** (`utils/chatSocket.ts`) rewritten resilient: generation-guarded init, 15s connect timeout, backoff reconnect (max 5), connection watchers, channel-bound send queue (TTL 60s, dead-letter after 5). New state `isSocketConnected` + action `setIsSocketConnected`.
+> - **Seen model changed:** ~5s `flushSeenQueue` decrement loop; open-time bulk-seen disabled; `seenMessageAll` unused. (§11's "100ms debounce" is stale.)
+> - **`MAX_PIN_ALLOWED` 20 → 5** (chat-list pins); message-pin fetch limit still 20. **`FLUSH_MS` 100 → 120.**
+> - **Send-gating extracted to pure tested modules:** `chat-box/utils/isChatEnabled.ts` + `chatSendGuard.ts` (+ `__tests__/isChatEnabled.test.ts`). Bubbles now layer via a `chatbox-utils/` subtree.
+> - **New/changed APIs:** message-template CRUD (+`/category`), custom-fan-list CRUD, media-consent/tag-approval, `purchase-media` v2, `POST /users/get-message-unread-count`; several renamed paths (chatting-fee, `converse-channel/:id/stats`, `clear-userchat`).
+> - **Dead — do NOT port:** `hooks/useChatNotification.tsx` (never imported; dispatches non-existent `setPrevChat`/`setCurrentChat`); `TAG-APPROVAL` (in the union but unrouted → plain text); legacy `RatingRequest.tsx`.
+
+---
+
 ## 1. REDUX STATE — Full ChatState Shape
 
 ```typescript
