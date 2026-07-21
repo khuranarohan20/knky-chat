@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "../../lib/utils";
 import { Command, CommandInput, CommandItem, CommandList } from "./command";
 
 interface ICommandProps {
