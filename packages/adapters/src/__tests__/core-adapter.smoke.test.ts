@@ -5,14 +5,15 @@ import type { Receipt } from '@knky-chat/core-chat';
 import { useChatStore } from '@knky-chat/chat-ui';
 
 import { CoreAdapter } from '../core/CoreAdapter';
-import { FakeConverse, mkMsg } from '../test/fakeConverse';
+import { FakeConverse, mkMsg, mkChat, makeFakeApi, type FakeApi } from '../test/fakeConverse';
 
-function makeAdapter() {
+function makeAdapter(api: FakeApi = makeFakeApi()) {
   return new CoreAdapter({
     apiEndpoint: 'http://api.test',
     converseProjectId: 'proj',
     converseHost: 'wss://socket.test',
     features: {},
+    api,
     ConverseClass: FakeConverse as unknown as new () => any,
     auth: {
       getConverseToken: async () => 'tok-123',
@@ -20,6 +21,8 @@ function makeAdapter() {
     },
   });
 }
+
+const tick = () => new Promise((r) => setTimeout(r, 10));
 
 // ---------------------------------------------------------------------------
 
@@ -42,6 +45,50 @@ describe('CoreAdapter end-to-end (fake Converse SDK)', () => {
 
     adapter.destroy();
     expect(adapter.getConnection().isConnected).toBe(false);
+  });
+
+  it('bootstraps chat list + unread counts + members from the host API', async () => {
+    const api = makeFakeApi({
+      chatList: [mkChat({ converse_channel_id: 'chan1' }), mkChat({ converse_channel_id: 'chan2' })],
+      unread: { totalUnreadCount: 3, channels: [{ channelId: 'chan2', unreadCount: 3 }] },
+      members: [{ userId: 'u1', channelId: 'chan1' } as any],
+    });
+
+    const adapter = makeAdapter(api);
+    await adapter.initialize();
+
+    expect(api.calls.getChatList).toBe(1);
+    expect(adapter.getChatList().map((c) => c.converse_channel_id)).toEqual(['chan1', 'chan2']);
+
+    const st = useChatStore.getState().getCreatorState(CORE_CREATOR_ID);
+    expect(st.totalUnreadCount).toBe(3);
+    expect(st.unreadChannels['chan2']).toBe(3);
+    expect(st.converseMembersList).toHaveLength(1);
+
+    adapter.destroy();
+  });
+
+  it('fetches channel details when a message arrives on an unknown channel', async () => {
+    const api = makeFakeApi({
+      chatList: [],
+      channelDetails: { chanNew: mkChat({ converse_channel_id: 'chanNew' }) },
+    });
+
+    const adapter = makeAdapter(api);
+    await adapter.initialize();
+
+    const fake = FakeConverse.instances.at(-1)!;
+    // Project-level message on a channel not in the list, from a human sender
+    fake.project.newMsgListener!({
+      message: mkMsg({ _id: 'mx', sender_id: 'other', isHuman: true, meta: { type: 'message', converseId: 'chanNew' } as any }),
+    });
+    await tick();
+
+    expect(api.calls.getChannelDetails).toContain('chanNew');
+    expect(adapter.getChatList().map((c) => c.converse_channel_id)).toContain('chanNew');
+    expect(adapter.getMessages('chanNew').map((m) => m._id)).toContain('mx');
+
+    adapter.destroy();
   });
 
   it('loads history, receives realtime messages, sends, updates seen + pins', async () => {

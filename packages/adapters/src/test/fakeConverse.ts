@@ -1,4 +1,5 @@
-import type { MessageInterface, Receipt } from '@knky-chat/core-chat';
+import type { Chat, ConversePair, MessageInterface, Receipt } from '@knky-chat/core-chat';
+import type { IChatApiClient, UnreadCounts } from '@knky-chat/chat-ui';
 
 // ---------------------------------------------------------------------------
 // Fake Converse SDK — implements the surface ChatConnection depends on and
@@ -52,11 +53,12 @@ export class FakeChannel {
 }
 
 export class FakeProject {
+  newMsgListener?: (raw: any) => void;
   onlineListener?: (r: { userId: string }) => void;
   offlineListener?: (r: { userId: string }) => void;
   exitOnlineUsersRoom() {}
   joinOnlineUsersRoom() {}
-  listenNewMessage() {}
+  listenNewMessage(cb: any) { this.newMsgListener = cb; }
   listenEditMessage() {}
   listenUserOnline(cb: any) { this.onlineListener = cb; }
   listenUserOffline(cb: any) { this.offlineListener = cb; }
@@ -105,4 +107,42 @@ export function mkMsg(p: Partial<MessageInterface>): MessageInterface {
     tags: [],
     ...p,
   } as MessageInterface;
+}
+
+export function mkChat(p: Partial<Chat>): Chat {
+  return { converse_channel_id: '', unreadCount: 0, ...p } as Chat;
+}
+
+// ---------------------------------------------------------------------------
+// Fake host API client — records calls, returns canned data.
+// ---------------------------------------------------------------------------
+
+export interface FakeApi extends IChatApiClient {
+  calls: { getChatList: number; getChannelDetails: string[] };
+}
+
+export function makeFakeApi(opts?: {
+  chatList?: Chat[];
+  channelDetails?: Record<string, Chat>;
+  unread?: UnreadCounts;
+  members?: ConversePair[];
+}): FakeApi {
+  const calls = { getChatList: 0, getChannelDetails: [] as string[] };
+  return {
+    calls,
+    async getChatList() {
+      calls.getChatList++;
+      return opts?.chatList ?? [];
+    },
+    async getChannelDetails(channelId: string) {
+      calls.getChannelDetails.push(channelId);
+      return opts?.channelDetails?.[channelId] ?? null;
+    },
+    async getUnreadCounts() {
+      return opts?.unread ?? { totalUnreadCount: 0, channels: [] };
+    },
+    async getConverseMembers() {
+      return opts?.members ?? [];
+    },
+  };
 }

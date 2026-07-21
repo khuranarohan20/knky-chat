@@ -76,6 +76,39 @@ export class CoreAdapter implements IPlatformAdapter {
       token,
       serverUrl: this.config.converseHost,
     });
+
+    // 4. Bootstrap chat data from the host API
+    await this.bootstrap();
+  }
+
+  /** Load chat list + unread counts + converse members into the store. */
+  private async bootstrap(): Promise<void> {
+    const store = useChatStore.getState();
+    const { api } = this.config;
+
+    store.setChatListLoading(CORE_CREATOR_ID, true);
+    try {
+      const [chatList, unread, members] = await Promise.all([
+        api.getChatList({}),
+        api.getUnreadCounts?.() ?? Promise.resolve(null),
+        api.getConverseMembers?.() ?? Promise.resolve(null),
+      ]);
+
+      store.setChatList(CORE_CREATOR_ID, chatList);
+
+      if (unread) {
+        store.setTotalUnreadCount(CORE_CREATOR_ID, unread.totalUnreadCount);
+        const map: Record<string, number> = {};
+        unread.channels.forEach((c) => { map[c.channelId] = c.unreadCount; });
+        store.setUnreadChannels(CORE_CREATOR_ID, map);
+      }
+
+      if (members) {
+        store.setConverseMembersList(CORE_CREATOR_ID, members);
+      }
+    } finally {
+      store.setChatListLoading(CORE_CREATOR_ID, false);
+    }
   }
 
   destroy(): void {
@@ -148,10 +181,7 @@ export class CoreAdapter implements IPlatformAdapter {
   // ---------------------------------------------------------------------------
 
   private async fetchChannelDetails(channelId: string): Promise<Chat | null> {
-    // The host app's API client handles this — we call back via config.
-    // For now return null; CoreAdapter consumers should override if needed.
-    void channelId;
-    return null;
+    return this.config.api.getChannelDetails(channelId);
   }
 
   private shouldShowChat(chat: Chat): boolean {

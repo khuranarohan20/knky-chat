@@ -1,6 +1,36 @@
-import type { Chat, MessageInterface, MetaInterface } from '@knky-chat/core-chat';
+import type { Chat, ConversePair, MessageInterface, MetaInterface } from '@knky-chat/core-chat';
 import type { SocketEventBridge } from '../bridge/SocketEventBridge';
 import type { ChatConnection, ConnectionManager } from '@knky-chat/core-chat';
+
+// ---------------------------------------------------------------------------
+// Host API contract — the library never talks to the backend directly; the
+// host app injects an implementation (its own axios/fetch client with auth).
+// Every method takes an optional creatorId so agency can scope calls to the
+// right creator token; core ignores it (there is only "__core__").
+// ---------------------------------------------------------------------------
+
+export interface ChatListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface UnreadCounts {
+  totalUnreadCount: number;
+  channels: Array<{ channelId: string; unreadCount: number }>;
+}
+
+export interface IChatApiClient {
+  /** Fetch the chat list (already sorted/filtered by the host as needed). */
+  getChatList(params: ChatListParams, creatorId?: string): Promise<Chat[]>;
+  /** Fetch a single channel's details — used when a message arrives on a
+   *  channel not yet in the list. Return null if it can't be resolved. */
+  getChannelDetails(channelId: string, creatorId?: string): Promise<Chat | null>;
+  /** Optional bootstrap: unread counts seeded on connect. */
+  getUnreadCounts?(creatorId?: string): Promise<UnreadCounts>;
+  /** Optional bootstrap: converse member (userId↔channelId) pairs. */
+  getConverseMembers?(creatorId?: string): Promise<ConversePair[]>;
+}
 
 // ---------------------------------------------------------------------------
 // Feature flags
@@ -56,6 +86,8 @@ export interface BasePlatformConfig {
   converseProjectId: string;
   converseHost: string;
   features: Partial<ChatFeatures>;
+  /** Host-provided API client — how the library reads chat data from the backend. */
+  api: IChatApiClient;
 }
 
 export interface CorePlatformConfig extends BasePlatformConfig {

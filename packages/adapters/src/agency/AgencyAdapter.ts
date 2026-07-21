@@ -193,10 +193,43 @@ export class AgencyAdapter implements IPlatformAdapter {
       serverUrl: this.config.converseHost,
       agencyMeta: { sent_by: 'agency', emp: this.emp },
     });
+
+    // Bootstrap this creator's chat data from the host API (scoped by creatorId)
+    await this.bootstrap(creatorId);
   }
 
-  private async fetchChannelDetails(_channelId: string, _creatorId: string): Promise<Chat | null> {
-    return null;
+  /** Load a creator's chat list + unread counts + converse members. */
+  private async bootstrap(creatorId: string): Promise<void> {
+    const store = useChatStore.getState();
+    const { api } = this.config;
+
+    store.setChatListLoading(creatorId, true);
+    try {
+      const [chatList, unread, members] = await Promise.all([
+        api.getChatList({}, creatorId),
+        api.getUnreadCounts?.(creatorId) ?? Promise.resolve(null),
+        api.getConverseMembers?.(creatorId) ?? Promise.resolve(null),
+      ]);
+
+      store.setChatList(creatorId, chatList);
+
+      if (unread) {
+        store.setTotalUnreadCount(creatorId, unread.totalUnreadCount);
+        const map: Record<string, number> = {};
+        unread.channels.forEach((c) => { map[c.channelId] = c.unreadCount; });
+        store.setUnreadChannels(creatorId, map);
+      }
+
+      if (members) {
+        store.setConverseMembersList(creatorId, members);
+      }
+    } finally {
+      store.setChatListLoading(creatorId, false);
+    }
+  }
+
+  private async fetchChannelDetails(channelId: string, creatorId: string): Promise<Chat | null> {
+    return this.config.api.getChannelDetails(channelId, creatorId);
   }
 
   private shouldShowChat(chat: Chat, creatorId: string): boolean {

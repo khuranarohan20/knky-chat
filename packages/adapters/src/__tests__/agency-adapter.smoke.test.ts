@@ -3,16 +3,17 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useChatStore } from '@knky-chat/chat-ui';
 
 import { AgencyAdapter } from '../agency/AgencyAdapter';
-import { FakeConverse, mkMsg } from '../test/fakeConverse';
+import { FakeConverse, mkMsg, mkChat, makeFakeApi, type FakeApi } from '../test/fakeConverse';
 
 const CREATORS = ['creatorA', 'creatorB'];
 
-function makeAgencyAdapter() {
+function makeAgencyAdapter(api: FakeApi = makeFakeApi()) {
   return new AgencyAdapter({
     apiEndpoint: 'http://api.test',
     converseProjectId: 'proj',
     converseHost: 'wss://socket.test',
     features: {},
+    api,
     ConverseClass: FakeConverse as unknown as new () => any,
     agentId: 'agent1',
     agentName: 'Agent One',
@@ -43,6 +44,20 @@ describe('AgencyAdapter end-to-end (fake Converse SDK)', () => {
     for (const id of CREATORS) {
       expect(st.getCreatorState(id).creatorToken).toBe(`tok-${id}`);
       expect(adapter.getConnection(id)?.isConnected).toBe(true);
+    }
+
+    adapter.destroy();
+  });
+
+  it("bootstraps each creator's chat list from the host API", async () => {
+    const api = makeFakeApi({ chatList: [mkChat({ converse_channel_id: 'c1' })] });
+    const adapter = makeAgencyAdapter(api);
+    await adapter.initialize();
+
+    // getChatList called once per creator (scoped by creatorId)
+    expect(api.calls.getChatList).toBe(CREATORS.length);
+    for (const id of CREATORS) {
+      expect(adapter.getChatList(id).map((c) => c.converse_channel_id)).toContain('c1');
     }
 
     adapter.destroy();
