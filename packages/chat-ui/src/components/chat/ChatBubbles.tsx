@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 
 import { VIRTUOSO_BASE } from '@knky-chat/core-chat';
 import { useChat } from '../../hooks/useChat';
+import { useSeenManager } from '../../hooks/useSeenManager';
 import { cn } from '../../lib/utils';
 import { RenderMessage } from '../messages/RenderMessage';
 
@@ -24,6 +25,31 @@ export interface ChatBubblesProps {
  */
 export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubblesProps): React.ReactElement {
   const { messages } = useChat(creatorId);
+  const { markSeen, flushSeen } = useSeenManager(creatorId);
+
+  // Stable base keeps indices monotonic across prepends.
+  const firstItemIndex = Math.max(0, VIRTUOSO_BASE - messages.length);
+
+  // Mark visible incoming messages as seen (batched by the bridge queue).
+  const onRangeChanged = useCallback(
+    (range: { startIndex: number; endIndex: number }) => {
+      if (!currentUserId) return;
+      const start = Math.max(0, range.startIndex - firstItemIndex);
+      const end = Math.min(messages.length - 1, range.endIndex - firstItemIndex);
+      for (let i = start; i <= end; i++) {
+        const m = messages[i];
+        if (!m) continue;
+        const senderId = m.sender_id || m.sid || '';
+        if (senderId && senderId !== currentUserId) {
+          markSeen(m._id || m.messageId, senderId);
+        }
+      }
+    },
+    [messages, firstItemIndex, currentUserId, markSeen],
+  );
+
+  // Flush pending receipts when the list unmounts (channel close / switch).
+  useEffect(() => () => flushSeen(), [flushSeen]);
 
   if (messages.length === 0) {
     return (
@@ -33,9 +59,6 @@ export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubbles
     );
   }
 
-  // Stable base keeps indices monotonic across prepends.
-  const firstItemIndex = Math.max(0, VIRTUOSO_BASE - messages.length);
-
   return (
     <Virtuoso
       className={cn('h-full w-full', className)}
@@ -43,6 +66,7 @@ export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubbles
       firstItemIndex={firstItemIndex}
       initialTopMostItemIndex={messages.length - 1}
       followOutput="smooth"
+      rangeChanged={onRangeChanged}
       itemContent={(_index, message) => (
         <RenderMessage message={message} currentUserId={currentUserId} />
       )}
