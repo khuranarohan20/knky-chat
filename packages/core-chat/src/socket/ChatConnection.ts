@@ -588,15 +588,20 @@ export class ChatConnection {
   // ---------------------------------------------------------------------------
 
   private async waitTillConnected(timeout = 10_000): Promise<void> {
+    // Fast path: already connected (the common case right after init) — resolve
+    // immediately instead of waiting for the first poll tick.
+    if (this.converse?.checkConnection()) return;
+
     return new Promise((resolve, reject) => {
       const interval = setInterval(() => {
         if (this.converse?.checkConnection()) {
           clearInterval(interval);
+          clearTimeout(timer);
           resolve();
         }
-      }, 500);
+      }, 100);
 
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         clearInterval(interval);
         reject(new Error('ChatConnection: waitTillConnected timed out'));
       }, timeout);
