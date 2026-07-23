@@ -4,8 +4,12 @@ export { ChatBar } from './chat/ChatBar';
 export { ChatBubbles } from './chat/ChatBubbles';
 export { ChatHeader } from './chat/ChatHeader';
 export { ChatList } from './chat/ChatList';
+export type { ChatListProps } from './chat/ChatList';
 export { ChatListTabs } from './chat/ChatListTabs';
 export { ChatPerson } from './chat/ChatPerson';
+export type { ChatPersonProps } from './chat/ChatPerson';
+export { Avatar } from './chat/Avatar';
+export type { AvatarProps } from './chat/Avatar';
 export { MediaRenderer } from './chat-variations/MediaRenderer';
 export type { ChatBubblesProps } from './chat/ChatBubbles';
 

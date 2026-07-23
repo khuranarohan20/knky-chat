@@ -3,27 +3,7 @@ import React from 'react';
 import type { ChatPerson } from '@knky-chat/core-chat';
 import { useChat } from '../../hooks/useChat';
 import { cn } from '../../lib/utils';
-
-function initialsOf(name: string): string {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
-
-function Avatar({ url, name }: { url?: string; name: string }): React.ReactElement {
-  if (url) {
-    return <img src={url} alt={name} className="size-9 rounded-full object-cover" />;
-  }
-  return (
-    <div className="flex size-9 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-      {initialsOf(name)}
-    </div>
-  );
-}
+import { Avatar } from './Avatar';
 
 export interface ChatHeaderProps {
   creatorId?: string;

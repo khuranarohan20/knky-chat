@@ -22,6 +22,13 @@ export function useShowChat(creatorId?: string) {
 
       const store = useChatStore.getState();
       store.setActiveChannelId(id, channelId);
+
+      // Set the header's target person from the chat list entry, if present.
+      const chat = store
+        .getCreatorState(id)
+        .chatList.find((c) => c.converse_channel_id === channelId);
+      if (chat?.target) store.setTargetPerson(id, chat.target);
+
       store.setMessagesLoading(id, true);
       try {
         await conn.connectChannel(channelId, unreadCount);
