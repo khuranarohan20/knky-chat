@@ -67,14 +67,17 @@ export interface CoreAuthConfig {
 }
 
 export interface AgencyAuthConfig {
-  /** Log in as a specific creator and return their creator token */
-  loginAsCreator(creatorId: string): Promise<{ token: string }>;
-  /** Return the stored creator token for a given creator */
-  getCreatorToken(creatorId: string): string;
-  /** Verify a token with the backend for a given creator */
-  verifyConverseToken(params: { projectId: string; token: string; creatorId: string }): Promise<void>;
-  /** AES decryption key for converse tokens */
-  decryptKey: string;
+  /**
+   * Return the plaintext converse (socket) token for a creator.
+   *
+   * The host owns the full flow: log in as the creator, request the converse
+   * token, and AES-decrypt it. The library never sees the creator API token,
+   * the encrypted payload, or the decrypt key — the host's own API client
+   * handles request auth, and the host manages token renewal.
+   */
+  getConverseToken(creatorId: string): Promise<string>;
+  /** Optional: verify the converse token with the backend before connecting. */
+  verifyConverseToken?(params: { projectId: string; token: string; creatorId: string }): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------

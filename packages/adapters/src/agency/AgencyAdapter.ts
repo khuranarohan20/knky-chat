@@ -161,17 +161,17 @@ export class AgencyAdapter implements IPlatformAdapter {
     const store = useChatStore.getState();
     store.initCreator(creatorId);
 
-    // 1. Login as creator to get creator token
-    const { token: creatorToken } = await this.config.auth.loginAsCreator(creatorId);
-    store.setCreatorToken(creatorId, creatorToken);
-
-    // 2. Request + verify converse token
-    // Agency tokens are AES-encrypted — decryption happens in the host's
-    // auth.loginAsCreator implementation; we receive the plain token here.
-    const converseToken = creatorToken; // host decrypts before returning
+    // 1. Get the plaintext converse token (host logs in as the creator,
+    //    requests the token, and decrypts it — all internal to the host).
+    const converseToken = await this.config.auth.getConverseToken(creatorId);
     store.setConverseToken(creatorId, converseToken);
+    await this.config.auth.verifyConverseToken?.({
+      projectId: this.config.converseProjectId,
+      token: converseToken,
+      creatorId,
+    });
 
-    // 3. Register the connection, mount the bridge, THEN init — so onReady and
+    // 2. Register the connection, mount the bridge, THEN init — so onReady and
     //    any init-time bootstrap events reach the bridge's callbacks rather
     //    than firing into the void (mirrors CoreAdapter's ordering).
     const connection = this.manager.create(creatorId);

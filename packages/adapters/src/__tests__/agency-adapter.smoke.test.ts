@@ -19,10 +19,8 @@ function makeAgencyAdapter(api: FakeApi = makeFakeApi()) {
     agentName: 'Agent One',
     creatorIds: CREATORS,
     auth: {
-      loginAsCreator: async (id: string) => ({ token: `tok-${id}` }),
-      getCreatorToken: (id: string) => `tok-${id}`,
+      getConverseToken: async (id: string) => `converse-${id}`,
       verifyConverseToken: async () => {},
-      decryptKey: 'decrypt-key',
     },
   });
 }
@@ -42,7 +40,7 @@ describe('AgencyAdapter end-to-end (fake Converse SDK)', () => {
     expect(st.currentCreatorId).toBe('creatorA');
 
     for (const id of CREATORS) {
-      expect(st.getCreatorState(id).creatorToken).toBe(`tok-${id}`);
+      expect(st.getCreatorState(id).converseToken).toBe(`converse-${id}`);
       expect(adapter.getConnection(id)?.isConnected).toBe(true);
     }
 
