@@ -6,6 +6,7 @@ import { useChat } from '../../hooks/useChat';
 import { useSeenManager } from '../../hooks/useSeenManager';
 import { cn } from '../../lib/utils';
 import { RenderMessage } from '../messages/RenderMessage';
+import { ChatBubbleShimmer } from '../shimmers/ChatBubbleShimmer';
 
 export interface ChatBubblesProps {
   /** Creator scope — defaults to the active creator (core: "__core__"). */
@@ -24,7 +25,7 @@ export interface ChatBubblesProps {
  * source apps.
  */
 export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubblesProps): React.ReactElement {
-  const { messages } = useChat(creatorId);
+  const { messages, messagesLoading } = useChat(creatorId);
   const { markSeen, flushSeen } = useSeenManager(creatorId);
 
   // Stable base keeps indices monotonic across prepends.
@@ -52,6 +53,9 @@ export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubbles
   useEffect(() => () => flushSeen(), [flushSeen]);
 
   if (messages.length === 0) {
+    if (messagesLoading) {
+      return <ChatBubbleShimmer className={className} />;
+    }
     return (
       <div className={cn('flex h-full w-full items-center justify-center', className)}>
         <p className="text-sm text-muted-foreground">No messages yet</p>

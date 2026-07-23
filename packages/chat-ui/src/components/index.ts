@@ -15,6 +15,11 @@ export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';
 export type { AvatarProps } from './chat/Avatar';
 export { MediaRenderer } from './chat-variations/MediaRenderer';
+
+// Loading skeletons
+export { ChatBubbleShimmer } from './shimmers/ChatBubbleShimmer';
+export { ChatListShimmer } from './shimmers/ChatListShimmer';
+export { ChatPersonShimmer } from './shimmers/ChatPersonShimmer';
 export type { ChatBubblesProps } from './chat/ChatBubbles';
 
 // Message rendering (polymorphic router + bubble variations)

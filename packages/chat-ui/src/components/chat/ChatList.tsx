@@ -4,8 +4,10 @@ import { useChat } from '../../hooks/useChat';
 import { useShowChat } from '../../hooks/useShowChat';
 import { cn } from '../../lib/utils';
 import { filterChats } from '../../lib/filterChats';
+import { useChatListLoading } from '../../store/chatStore';
 import { ChatListFilters } from './ChatListFilters';
 import { ChatPerson } from './ChatPerson';
+import { ChatListShimmer } from '../shimmers/ChatListShimmer';
 
 export interface ChatListProps {
   creatorId?: string;
@@ -21,6 +23,7 @@ export interface ChatListProps {
  */
 export function ChatList({ creatorId, className, showFilters = true }: ChatListProps): React.ReactElement {
   const { chatList, activeChannelId, filter, creatorId: id } = useChat(creatorId);
+  const loading = useChatListLoading(id);
   const { openChat } = useShowChat(creatorId);
   const [search, setSearch] = useState('');
 
@@ -47,7 +50,9 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
       ) : null}
 
       <div className="flex-1 overflow-y-auto">
-        {visible.length === 0 ? (
+        {loading && chatList.length === 0 ? (
+          <ChatListShimmer />
+        ) : visible.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">No chats</p>
         ) : (
           visible.map((chat) => (

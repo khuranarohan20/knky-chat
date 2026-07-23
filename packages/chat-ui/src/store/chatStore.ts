@@ -681,6 +681,9 @@ export const usePinnedMessages = (creatorId: string, channelId: string) =>
 export const useMessagesLoading = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.isMessagesLoading ?? false);
 
+export const useChatListLoading = (creatorId: string) =>
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.chatListLoading ?? false);
+
 export const useMoreMessagesLoading = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.loadingMoreMessages ?? DEFAULT_MORE);
 
