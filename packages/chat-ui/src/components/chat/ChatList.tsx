@@ -4,7 +4,7 @@ import { useChat } from '../../hooks/useChat';
 import { useShowChat } from '../../hooks/useShowChat';
 import { cn } from '../../lib/utils';
 import { filterChats } from '../../lib/filterChats';
-import { useChatListLoading } from '../../store/chatStore';
+import { useChatListLoading, useOnlineUsers } from '../../store/chatStore';
 import { ChatListFilters } from './ChatListFilters';
 import { ChatPerson } from './ChatPerson';
 import { ChatListShimmer } from '../shimmers/ChatListShimmer';
@@ -24,6 +24,7 @@ export interface ChatListProps {
 export function ChatList({ creatorId, className, showFilters = true }: ChatListProps): React.ReactElement {
   const { chatList, activeChannelId, filter, creatorId: id } = useChat(creatorId);
   const loading = useChatListLoading(id);
+  const onlineUsers = useOnlineUsers(id);
   const { openChat } = useShowChat(creatorId);
   const [search, setSearch] = useState('');
 
@@ -60,6 +61,7 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
               key={chat.converse_channel_id}
               chat={chat}
               active={chat.converse_channel_id === activeChannelId}
+              online={!!chat.target?._id && onlineUsers.has(chat.target._id)}
               onSelect={() => void openChat(chat.converse_channel_id, chat.unreadCount ?? 0)}
             />
           ))

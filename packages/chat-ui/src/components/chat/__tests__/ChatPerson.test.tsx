@@ -29,11 +29,11 @@ describe('ChatPerson', () => {
   });
 
   it('omits the unread badge when count is zero', () => {
-    // The badge is the only element using bg-primary.
-    expect(render(<ChatPerson chat={chat({ unreadCount: 0 })} />)).not.toContain('bg-primary');
+    // The unread badge is the only element using bg-red-500.
+    expect(render(<ChatPerson chat={chat({ unreadCount: 0 })} />)).not.toContain('bg-red-500');
   });
 
-  it('applies the active highlight', () => {
-    expect(render(<ChatPerson chat={chat({})} active />)).toContain('bg-muted');
+  it('applies the active highlight (magenta left border)', () => {
+    expect(render(<ChatPerson chat={chat({})} active />)).toContain('border-l-[#ac1991]');
   });
 });

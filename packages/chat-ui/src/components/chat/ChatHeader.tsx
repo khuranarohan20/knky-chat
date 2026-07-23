@@ -22,12 +22,12 @@ export function ChatHeader({ creatorId, className }: ChatHeaderProps): React.Rea
   const name = person.display_name || person.username || 'Unknown';
 
   return (
-    <div className={cn('flex items-center gap-3 border-b bg-background px-4 py-2.5', className)}>
-      <Avatar url={person.avatar?.[0]?.url} name={name} />
+    <div className={cn('flex items-center gap-3 border-b bg-white p-3', className)}>
+      <Avatar url={person.avatar?.[0]?.url} name={name} className="size-11" />
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{name}</p>
+        <p className="truncate text-sm font-medium text-gray-900">{name}</p>
         {person.username ? (
-          <p className="truncate text-xs text-muted-foreground">@{person.username}</p>
+          <p className="truncate text-xs text-gray-500">@{person.username}</p>
         ) : null}
       </div>
     </div>

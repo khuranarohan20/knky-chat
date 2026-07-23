@@ -11,19 +11,16 @@ interface MessageBubbleProps {
 }
 
 /**
- * The shared bubble frame: handles left/right alignment and mine/theirs
- * colours, and appends the timestamp + receipt row. Individual bubble
- * variations render only their inner content.
+ * Shared bubble frame — left/right alignment; sent = white + border,
+ * received = light grey (#f5f5f6). Matches the agency chat's bubble styling.
  */
 export function MessageBubble({ message, isMine, children }: MessageBubbleProps): React.ReactElement {
   return (
     <div className={cn('flex w-full px-3 py-1', isMine ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[75%] rounded-2xl px-3 py-2 text-sm break-words',
-          isMine
-            ? 'bg-primary text-primary-foreground rounded-br-sm'
-            : 'bg-muted text-foreground rounded-bl-sm',
+          'max-w-md rounded-lg px-4 py-2 text-sm break-words',
+          isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black',
         )}
       >
         {children}

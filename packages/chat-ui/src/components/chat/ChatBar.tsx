@@ -48,7 +48,7 @@ export function ChatBar({
   };
 
   return (
-    <div className={cn('flex items-end gap-2 border-t bg-background p-3', className)}>
+    <div className={cn('flex items-center gap-3 border-t bg-white p-2', className)}>
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
