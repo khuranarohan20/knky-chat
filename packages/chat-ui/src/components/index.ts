@@ -5,6 +5,8 @@ export { ChatBubbles } from './chat/ChatBubbles';
 export { ChatHeader } from './chat/ChatHeader';
 export { ChatList } from './chat/ChatList';
 export type { ChatListProps } from './chat/ChatList';
+export { ChatListFilters } from './chat/ChatListFilters';
+export type { ChatListFiltersProps } from './chat/ChatListFilters';
 export { ChatListTabs } from './chat/ChatListTabs';
 export { ChatPerson } from './chat/ChatPerson';
 export type { ChatPersonProps } from './chat/ChatPerson';
