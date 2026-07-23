@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { ChatBar } from './ChatBar';
 import { ChatBubbles } from './ChatBubbles';
 import { ChatHeader } from './ChatHeader';
+import { PinnedMessages } from './PinnedMessages';
 
 export interface ChatBoxProps {
   creatorId?: string;
@@ -24,6 +25,7 @@ export function ChatBox({ creatorId, currentUserId, className }: ChatBoxProps): 
   return (
     <div className={cn('flex h-full flex-col bg-background', className)}>
       <ChatHeader creatorId={creatorId} />
+      {hasActiveChannel ? <PinnedMessages creatorId={creatorId} /> : null}
       <div className="min-h-0 flex-1">
         {hasActiveChannel ? (
           <ChatBubbles creatorId={creatorId} currentUserId={currentUserId} />

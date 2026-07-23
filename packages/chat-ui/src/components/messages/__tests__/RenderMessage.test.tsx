@@ -96,8 +96,13 @@ describe('RenderMessage', () => {
     expect(render(<RenderMessage message={msg({ message: 'nice story', meta: { type: 'story-reply' } as any })} />)).toContain('Replied to your story');
   });
 
-  it('falls back to message text for types without a dedicated bubble (SET-PRICE)', () => {
-    const html = render(<RenderMessage message={msg({ message: 'price set', meta: { type: 'SET-PRICE' } as any })} />);
-    expect(html).toContain('price set');
+  it('routes SET-PRICE and TAG-APPROVAL', () => {
+    expect(render(<RenderMessage message={msg({ meta: { type: 'SET-PRICE', price: 9 } as any })} />)).toContain('Price set');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'TAG-APPROVAL', tag_name: 'collab' } as any })} />)).toContain('Tag approval');
+  });
+
+  it('falls back to message text for unknown/stream types', () => {
+    const html = render(<RenderMessage message={msg({ message: 'live now', meta: { type: 'stream' } as any })} />);
+    expect(html).toContain('live now');
   });
 });

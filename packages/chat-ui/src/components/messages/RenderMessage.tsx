@@ -13,7 +13,9 @@ import {
   NewPayment,
   RatingRequest,
   RequestTip,
+  SetPrice,
   StoryReply,
+  TagApproval,
   VideoVoiceBubble,
 } from './bubbles/service-bubbles';
 
@@ -37,11 +39,11 @@ function FallbackBubble({ message }: { message: MessageInterface }): React.React
 /**
  * Polymorphic router: picks a bubble variation from `meta.type`.
  *
- * Dedicated bubbles: text, media attachments, tips (sent + requested),
- * VIDEO/VOICE, RATING, CUSTOM-SERVICE, ACCEPT_CALL, EMBEDS, NEW-PAYMENT,
- * chat-unlock, story-reply. Remaining types (SET-PRICE, TAG-APPROVAL, stream)
- * render through FallbackBubble — their text or a labelled placeholder — so
- * nothing crashes.
+ * Dedicated bubbles cover the full meta.type union: text, media attachments,
+ * tips (sent + requested), VIDEO/VOICE, RATING, CUSTOM-SERVICE, ACCEPT_CALL,
+ * EMBEDS, NEW-PAYMENT, chat-unlock, story-reply, SET-PRICE, TAG-APPROVAL.
+ * `stream` and any unknown/future type fall through to FallbackBubble (its
+ * text or a labelled placeholder) so nothing crashes.
  */
 export function RenderMessage({ message, currentUserId }: RenderMessageProps): React.ReactElement {
   const senderId = message.sender_id || message.sid || '';
@@ -85,6 +87,12 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
     case 'story-reply':
       content = <StoryReply message={message} />;
       break;
+    case 'SET-PRICE':
+      content = <SetPrice message={message} />;
+      break;
+    case 'TAG-APPROVAL':
+      content = <TagApproval message={message} />;
+      break;
     case 'message':
     case 'direct-message':
     case 'auto-message':
@@ -92,7 +100,7 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
       content = hasMedia(message) ? <MediaAttachment message={message} /> : <TextBubble message={message} />;
       break;
     default:
-      // SET-PRICE, TAG-APPROVAL, stream, etc. — text or labelled placeholder.
+      // stream and any unknown/future type — text or labelled placeholder.
       content = <FallbackBubble message={message} />;
   }
 

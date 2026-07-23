@@ -10,6 +10,8 @@ export type { ChatListFiltersProps } from './chat/ChatListFilters';
 export { ChatListTabs } from './chat/ChatListTabs';
 export { ChatPerson } from './chat/ChatPerson';
 export type { ChatPersonProps } from './chat/ChatPerson';
+export { PinnedMessages } from './chat/PinnedMessages';
+export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';
 export type { AvatarProps } from './chat/Avatar';
 export { MediaRenderer } from './chat-variations/MediaRenderer';
@@ -34,4 +36,6 @@ export {
   RequestTip,
   ChatUnlock,
   StoryReply,
+  SetPrice,
+  TagApproval,
 } from './messages/bubbles/service-bubbles';

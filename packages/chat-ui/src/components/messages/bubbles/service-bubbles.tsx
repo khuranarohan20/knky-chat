@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  BadgeCheck,
   DollarSign,
   Gift,
   Link as LinkIcon,
@@ -9,6 +10,7 @@ import {
   Reply,
   Sparkles,
   Star,
+  Tag,
   Video,
 } from 'lucide-react';
 
@@ -133,5 +135,28 @@ export function StoryReply({ message }: BubbleProps): React.ReactElement {
     <InfoBubble icon={<Reply className="size-4" />} title="Replied to your story">
       {message.message ? <p className="mt-1 text-sm">{message.message}</p> : null}
     </InfoBubble>
+  );
+}
+
+/** SET-PRICE — a price was set on the conversation / content. */
+export function SetPrice({ message }: BubbleProps): React.ReactElement {
+  return (
+    <InfoBubble
+      icon={<Tag className="size-4" />}
+      title="Price set"
+      amount={message.meta?.price ?? message.meta?.amount}
+      subtitle={message.message || undefined}
+    />
+  );
+}
+
+/** TAG-APPROVAL — request to approve a tag. */
+export function TagApproval({ message }: BubbleProps): React.ReactElement {
+  return (
+    <InfoBubble
+      icon={<BadgeCheck className="size-4" />}
+      title="Tag approval"
+      subtitle={message.meta?.tag_name || message.message || undefined}
+    />
   );
 }
