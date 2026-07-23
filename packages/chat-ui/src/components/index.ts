@@ -21,3 +21,15 @@ export { BubbleTime } from './messages/BubbleTime';
 export { TextBubble } from './messages/bubbles/TextBubble';
 export { MediaAttachment } from './messages/bubbles/MediaAttachment';
 export { SentTip } from './messages/bubbles/SentTip';
+export { InfoBubble } from './messages/bubbles/InfoBubble';
+export {
+  VideoVoiceBubble,
+  RatingRequest,
+  CustomRequest,
+  JoinCallBtn,
+  ChatEmbeds,
+  NewPayment,
+  RequestTip,
+  ChatUnlock,
+  StoryReply,
+} from './messages/bubbles/service-bubbles';

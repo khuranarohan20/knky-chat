@@ -77,6 +77,18 @@ export const MESSAGES: Record<string, MessageInterface[]> = {
         { _id: 'a2', url: 'https://picsum.photos/seed/a2/400', type: 'image' },
       ] } as MessageInterface['meta'],
     }),
+    msg({
+      channel_id: 'chan-alice',
+      sender_id: 'u-alice',
+      message: '',
+      meta: { type: 'VIDEO', duration: 300, price: 40 } as MessageInterface['meta'],
+    }),
+    msg({
+      channel_id: 'chan-alice',
+      sender_id: 'u-alice',
+      message: '',
+      meta: { type: 'CUSTOM-SERVICE', request_note: 'Personalised birthday shoutout', price: 60 } as MessageInterface['meta'],
+    }),
     msg({ channel_id: 'chan-alice', sender_id: 'u-alice', message: 'See you tomorrow!' }),
   ],
   'chan-ben': [

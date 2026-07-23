@@ -5,6 +5,17 @@ import { MessageBubble } from './MessageBubble';
 import { TextBubble } from './bubbles/TextBubble';
 import { MediaAttachment } from './bubbles/MediaAttachment';
 import { SentTip } from './bubbles/SentTip';
+import {
+  ChatEmbeds,
+  ChatUnlock,
+  CustomRequest,
+  JoinCallBtn,
+  NewPayment,
+  RatingRequest,
+  RequestTip,
+  StoryReply,
+  VideoVoiceBubble,
+} from './bubbles/service-bubbles';
 
 export interface RenderMessageProps {
   message: MessageInterface;
@@ -26,11 +37,11 @@ function FallbackBubble({ message }: { message: MessageInterface }): React.React
 /**
  * Polymorphic router: picks a bubble variation from `meta.type`.
  *
- * This slice implements text, media attachments and tips fully; every other
- * type renders through FallbackBubble (its text, or a labelled placeholder)
- * so nothing crashes. Later slices replace those with dedicated bubbles
- * (VIDEO/VOICE, RATING, CUSTOM-SERVICE, EMBEDS, SET-PRICE, NEW-PAYMENT,
- * chat-unlock, REQUEST-TIP, story-reply, TAG-APPROVAL, ACCEPT_CALL).
+ * Dedicated bubbles: text, media attachments, tips (sent + requested),
+ * VIDEO/VOICE, RATING, CUSTOM-SERVICE, ACCEPT_CALL, EMBEDS, NEW-PAYMENT,
+ * chat-unlock, story-reply. Remaining types (SET-PRICE, TAG-APPROVAL, stream)
+ * render through FallbackBubble — their text or a labelled placeholder — so
+ * nothing crashes.
  */
 export function RenderMessage({ message, currentUserId }: RenderMessageProps): React.ReactElement {
   const senderId = message.sender_id || message.sid || '';
@@ -46,6 +57,34 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
     case 'SENT-TIP':
       content = <SentTip message={message} />;
       break;
+    case 'REQUEST-TIP':
+      content = <RequestTip message={message} />;
+      break;
+    case 'VIDEO':
+    case 'VOICE':
+      content = <VideoVoiceBubble message={message} />;
+      break;
+    case 'RATING':
+      content = <RatingRequest message={message} />;
+      break;
+    case 'CUSTOM-SERVICE':
+      content = <CustomRequest message={message} />;
+      break;
+    case 'ACCEPT_CALL':
+      content = <JoinCallBtn message={message} />;
+      break;
+    case 'EMBEDS':
+      content = <ChatEmbeds message={message} />;
+      break;
+    case 'NEW-PAYMENT':
+      content = <NewPayment message={message} />;
+      break;
+    case 'chat-unlock':
+      content = <ChatUnlock message={message} />;
+      break;
+    case 'story-reply':
+      content = <StoryReply message={message} />;
+      break;
     case 'message':
     case 'direct-message':
     case 'auto-message':
@@ -53,6 +92,7 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
       content = hasMedia(message) ? <MediaAttachment message={message} /> : <TextBubble message={message} />;
       break;
     default:
+      // SET-PRICE, TAG-APPROVAL, stream, etc. — text or labelled placeholder.
       content = <FallbackBubble message={message} />;
   }
 

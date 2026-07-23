@@ -70,7 +70,8 @@ export interface MetaInterface {
     | "EMBEDS"
     | "MASS-MESSAGE"
     | "TAG-APPROVAL"
-    | "NEW-PAYMENT";
+    | "NEW-PAYMENT"
+    | "REQUEST-TIP";
   sub_type?: "POST" | "PRODUCT" | "CHANNEL" | "GROUP";
   subtype?: "VIDEO" | "VOICE" | "RATING" | "CUSTOM-SERVICE" | "";
   requestAccept?: true | false | "sent";

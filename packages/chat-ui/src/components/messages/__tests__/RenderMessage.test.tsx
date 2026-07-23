@@ -76,8 +76,28 @@ describe('RenderMessage', () => {
     expect(html).not.toContain('http://img/1.jpg');
   });
 
-  it('falls back to message text for types without a dedicated bubble', () => {
-    const html = render(<RenderMessage message={msg({ message: 'call started', meta: { type: 'ACCEPT_CALL' } as any })} />);
-    expect(html).toContain('call started');
+  it('routes VIDEO/VOICE to a call bubble', () => {
+    expect(render(<RenderMessage message={msg({ meta: { type: 'VIDEO', price: 30 } as any })} />)).toContain('Video call');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'VOICE' } as any })} />)).toContain('Voice call');
+  });
+
+  it('routes RATING / CUSTOM-SERVICE / EMBEDS / NEW-PAYMENT', () => {
+    expect(render(<RenderMessage message={msg({ meta: { type: 'RATING' } as any })} />)).toContain('Rating request');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'CUSTOM-SERVICE', request_note: 'lyrics', price: 50 } as any })} />)).toContain('Custom request');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'EMBEDS', sub_type: 'POST' } as any })} />)).toContain('Shared a post');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'NEW-PAYMENT', amount: 12 } as any })} />)).toContain('$12');
+  });
+
+  it('routes REQUEST-TIP, chat-unlock, ACCEPT_CALL, story-reply', () => {
+    expect(render(<RenderMessage message={msg({ meta: { type: 'REQUEST-TIP', amount: 5 } as any })} />)).toContain('Tip request');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'chat-unlock' } as any })} />)).toContain('Content unlocked');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'ACCEPT_CALL' } as any })} />)).toContain('Incoming call');
+    expect(render(<RenderMessage message={msg({ meta: { type: 'ACCEPT_CALL', isCompleted: true } as any })} />)).toContain('Call ended');
+    expect(render(<RenderMessage message={msg({ message: 'nice story', meta: { type: 'story-reply' } as any })} />)).toContain('Replied to your story');
+  });
+
+  it('falls back to message text for types without a dedicated bubble (SET-PRICE)', () => {
+    const html = render(<RenderMessage message={msg({ message: 'price set', meta: { type: 'SET-PRICE' } as any })} />);
+    expect(html).toContain('price set');
   });
 });
