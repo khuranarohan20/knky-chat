@@ -1,13 +1,10 @@
 import React from 'react';
 import {
   BadgeCheck,
-  DollarSign,
   Gift,
   Link as LinkIcon,
   LockOpen,
   Phone,
-  PhoneCall,
-  Reply,
   Sparkles,
   Star,
   Tag,
@@ -16,8 +13,15 @@ import {
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { InfoBubble } from './InfoBubble';
+import { cn } from '../../../lib/utils';
+import { useChatConfig } from '../../../hooks/useChatConfig';
+import { Icon } from '../../common/Icon';
+import { BubbleTime } from '../BubbleTime';
+import { AudioSent, VideoSent } from '../svg';
 
 type BubbleProps = { message: MessageInterface };
+/** Card bubbles render standalone (own container + timestamp) and need "me/them". */
+type CardProps = { message: MessageInterface; isMine: boolean };
 
 /** VIDEO / VOICE call request. */
 export function VideoVoiceBubble({ message }: BubbleProps): React.ReactElement {
@@ -59,17 +63,25 @@ export function CustomRequest({ message }: BubbleProps): React.ReactElement {
   );
 }
 
-/** ACCEPT_CALL — active (join) or completed (ended). */
-export function JoinCallBtn({ message }: BubbleProps): React.ReactElement {
-  const done = message.meta?.isCompleted;
+/** ACCEPT_CALL — join a voice/video call (ported verbatim as a card). */
+export function JoinCallBtn({ message, isMine }: CardProps): React.ReactElement {
+  const { toast } = useChatConfig();
+  const isVoice = message?.message === 'Voice Call';
   return (
-    <InfoBubble icon={<PhoneCall className="size-4" />} title={done ? 'Call ended' : 'Incoming call'}>
-      {!done ? (
-        <button type="button" className="mt-1.5 rounded-md border px-3 py-1 text-xs font-medium">
-          Join call
-        </button>
-      ) : null}
-    </InfoBubble>
+    <div className={cn('flex w-sm flex-col gap-2 rounded-xl p-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+      <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center">{isVoice ? <AudioSent /> : <VideoSent />}</div>
+        <div className="font-bold">{isVoice ? 'Voice Call' : 'Video Call'}</div>
+      </div>
+      <button
+        type="button"
+        className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground"
+        onClick={() => toast?.error?.("You can't join a call on behalf of the creator.")}
+      >
+        Join the call
+      </button>
+      <BubbleTime message={message} isMine={isMine} />
+    </div>
   );
 }
 
@@ -93,16 +105,16 @@ export function ChatEmbeds({ message }: BubbleProps): React.ReactElement {
   );
 }
 
-/** NEW-PAYMENT — payment received. */
-export function NewPayment({ message }: BubbleProps): React.ReactElement {
-  const tx = message.meta?.transaction_id;
+/** NEW-PAYMENT — media unlocked notice (ported verbatim as a card). */
+export function NewPayment({ message, isMine }: CardProps): React.ReactElement {
   return (
-    <InfoBubble
-      icon={<DollarSign className="size-4" />}
-      title="Payment"
-      amount={message.meta?.amount}
-      subtitle={tx ? `#${tx}` : message.message || undefined}
-    />
+    <div className="max-w-sm rounded border bg-white p-2 text-black">
+      <div className="flex items-center gap-2">
+        <Icon icon="dollar-symbol" iconFolder="stand-alone-icons" />
+        <span>Media unlocked</span>
+      </div>
+      <BubbleTime message={message} isMine={isMine} />
+    </div>
   );
 }
 
@@ -129,12 +141,52 @@ export function ChatUnlock({ message }: BubbleProps): React.ReactElement {
   );
 }
 
-/** story-reply — reply to a story. */
-export function StoryReply({ message }: BubbleProps): React.ReactElement {
+/** story-reply — reply to a story with its media preview (ported verbatim). */
+export function StoryReply({ message, isMine }: CardProps): React.ReactElement | null {
+  const { getAssetUrl } = useChatConfig();
+  const story = message?.meta?.story_data as any;
+  const mediaArr = story?.media;
+  const media = Array.isArray(mediaArr) ? mediaArr[0] : mediaArr;
+  const isMediaEmpty = !mediaArr?.length;
+
+  if (!message?.meta?.expiry_date) return null;
+  const isExpired = new Date(message.meta.expiry_date) < new Date();
+
   return (
-    <InfoBubble icon={<Reply className="size-4" />} title="Replied to your story">
-      {message.message ? <p className="mt-1 text-sm">{message.message}</p> : null}
-    </InfoBubble>
+    <div className={cn('mt-2 flex flex-col', isMine ? 'items-end justify-end text-right' : 'items-start justify-start text-left')}>
+      <span className="text-sm text-gray-400">
+        {isMine ? 'You replied to their story' : 'Replied to your story'}
+      </span>
+      {isExpired ? (
+        <div className="h-40 w-24 rounded bg-gray-900 p-1">
+          <span className="text-center text-gray-400">Story Expired</span>
+        </div>
+      ) : (
+        <div className="cursor-pointer">
+          {isMediaEmpty ? (
+            <div className="h-40 w-24 rounded bg-black">
+              <img
+                src={getAssetUrl({ media: story?.post_id?.media?.[0] || story?.product?.media?.[0], variation: 'compressed', defaultType: 'background' })}
+                alt=""
+                height={80}
+                className="h-[80px] rounded object-cover"
+              />
+            </div>
+          ) : media?.type === 'video' ? (
+            <video controls className="rounded object-cover" height={160}>
+              <source src={getAssetUrl({ media, variation: 'compressed', defaultType: 'background' })} type="video/mp4" />
+            </video>
+          ) : (
+            <img
+              alt=""
+              src={getAssetUrl({ media, variation: 'compressed', defaultType: 'background' })}
+              className="rounded object-cover"
+              style={{ objectFit: 'cover', aspectRatio: '9 / 16', height: 160 }}
+            />
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -61,6 +61,15 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   if (type === 'SENT-TIP') {
     return alignWrap(<SentTip message={message} isMine={isMine} />);
   }
+  if (type === 'ACCEPT_CALL') {
+    return alignWrap(<JoinCallBtn message={message} isMine={isMine} />);
+  }
+  if (type === 'NEW-PAYMENT') {
+    return alignWrap(<NewPayment message={message} isMine={isMine} />);
+  }
+  if (type === 'story-reply') {
+    return alignWrap(<StoryReply message={message} isMine={isMine} />);
+  }
 
   let content: React.ReactNode;
   switch (type) {
@@ -77,20 +86,11 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
     case 'CUSTOM-SERVICE':
       content = <CustomRequest message={message} />;
       break;
-    case 'ACCEPT_CALL':
-      content = <JoinCallBtn message={message} />;
-      break;
     case 'EMBEDS':
       content = <ChatEmbeds message={message} />;
       break;
-    case 'NEW-PAYMENT':
-      content = <NewPayment message={message} />;
-      break;
     case 'chat-unlock':
       content = <ChatUnlock message={message} />;
-      break;
-    case 'story-reply':
-      content = <StoryReply message={message} />;
       break;
     case 'SET-PRICE':
       content = <SetPrice message={message} />;

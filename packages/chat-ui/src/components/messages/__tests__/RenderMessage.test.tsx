@@ -94,15 +94,19 @@ describe('RenderMessage', () => {
     expect(render(<RenderMessage message={msg({ meta: { type: 'RATING' } as any })} />)).toContain('Rating request');
     expect(render(<RenderMessage message={msg({ meta: { type: 'CUSTOM-SERVICE', request_note: 'lyrics', price: 50 } as any })} />)).toContain('Custom request');
     expect(render(<RenderMessage message={msg({ meta: { type: 'EMBEDS', sub_type: 'POST' } as any })} />)).toContain('Shared a post');
-    expect(render(<RenderMessage message={msg({ meta: { type: 'NEW-PAYMENT', amount: 12 } as any })} />)).toContain('$12');
+    // NEW-PAYMENT is a card rendered "Media unlocked" (matches agency NewPayment).
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'NEW-PAYMENT' } as any })} />)).toContain('Media unlocked');
   });
 
   it('routes REQUEST-TIP, chat-unlock, ACCEPT_CALL, story-reply', () => {
     expect(render(<RenderMessage message={msg({ meta: { type: 'REQUEST-TIP', amount: 5 } as any })} />)).toContain('Tip request');
     expect(render(<RenderMessage message={msg({ meta: { type: 'chat-unlock' } as any })} />)).toContain('Content unlocked');
-    expect(render(<RenderMessage message={msg({ meta: { type: 'ACCEPT_CALL' } as any })} />)).toContain('Incoming call');
-    expect(render(<RenderMessage message={msg({ meta: { type: 'ACCEPT_CALL', isCompleted: true } as any })} />)).toContain('Call ended');
-    expect(render(<RenderMessage message={msg({ message: 'nice story', meta: { type: 'story-reply' } as any })} />)).toContain('Replied to your story');
+    // ACCEPT_CALL card (uses host toast) + story-reply card (uses getAssetUrl) need the adapter context.
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'ACCEPT_CALL' } as any })} />)).toContain('Join the call');
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+    expect(
+      renderWithAdapter(<RenderMessage message={msg({ message: 'nice story', meta: { type: 'story-reply', expiry_date: future } as any })} />),
+    ).toContain('Replied to your story');
   });
 
   it('routes SET-PRICE and TAG-APPROVAL', () => {
