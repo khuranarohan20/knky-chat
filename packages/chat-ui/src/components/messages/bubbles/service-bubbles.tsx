@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Sparkles, Tag } from 'lucide-react';
+import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Tag } from 'lucide-react';
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { InfoBubble } from './InfoBubble';
@@ -165,15 +165,106 @@ export function RatingRequest({ message, isMine }: CardProps): React.ReactElemen
   );
 }
 
-/** CUSTOM-SERVICE request. */
-export function CustomRequest({ message }: BubbleProps): React.ReactElement {
+/** CUSTOM-SERVICE request — offer/counter card with accept/counter/decline
+ *  (ported from CustomRequestReceiver; actions routed via host modals). */
+export function CustomRequest({ message, isMine }: CardProps): React.ReactElement {
+  const { getAssetUrl, openModal, toast } = useChatConfig();
+  const meta = message?.meta;
+  const isRequestSent = meta?.requestAccept === 'sent';
+  const isAccepted = meta?.requestAccept === true;
+  const isDeclined = meta?.counter_status === 'rejected' || meta?.requestAccept === false;
+  const isPartial = meta?.partial_accept;
+  const counterPending = meta?.counter_status === 'pending';
+  const media = Array.isArray(meta?.media) ? meta?.media : meta?.media ? [meta.media] : [];
+  const offer = (meta?.has_discount && meta?.discount?.discount_value) || meta?.price || 0;
+  const reqIcon = (meta?.request_icon as any)?.[0];
+
+  const badge = (label: string, color: string, bg: string) => (
+    <div className="absolute right-0 top-0 m-2">
+      <div className="inline-flex items-center rounded border px-2 py-1 text-xs font-medium" style={{ color, borderColor: color, backgroundColor: bg }}>
+        {label}
+      </div>
+    </div>
+  );
+
   return (
-    <InfoBubble
-      icon={<Sparkles className="size-4" />}
-      title="Custom request"
-      subtitle={message.meta?.request_note || message.meta?.custom_info || message.message || undefined}
-      amount={message.meta?.price ?? message.meta?.amount}
-    />
+    <div className="relative flex w-sm flex-col gap-2 rounded-lg bg-[#f5f5f6] px-2 text-black">
+      {meta?.free_service ? (
+        <div className="absolute left-0 top-0 m-2 inline-flex items-center rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">Free Service</div>
+      ) : null}
+
+      {counterPending ? badge('New Counter', '#884dff', 'rgba(136,77,255,0.2)')
+        : isAccepted ? badge('Completed', '#0068ff', 'rgba(0,104,255,0.12)')
+        : isDeclined ? badge('Declined', '#f5222d', 'rgba(245,34,45,0.2)')
+        : isRequestSent && isPartial ? badge('Accepted', '#56c22d', 'rgba(86,194,45,0.2)')
+        : isRequestSent ? badge('New', '#884dff', 'rgba(136,77,255,0.2)')
+        : null}
+
+      <div className="flex items-center gap-2 py-2">
+        <img
+          src={reqIcon ? getAssetUrl({ media: reqIcon }) : '/images/chat/service-icon.png'}
+          alt="Request"
+          className="size-[72px] select-none rounded object-cover"
+        />
+        <div className="flex flex-col justify-center">
+          <div className="text-lg font-bold">Request</div>
+          <div className="text-sm">
+            Offer: {formatCurrency(offer)}
+            {meta?.counter_offer_price ? <span className="font-bold"> | Counter: {formatCurrency(meta.counter_offer_price)}</span> : null}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p className="flex gap-1">
+          <span className="whitespace-nowrap text-gray-500">Requesting for:</span>
+          <span className="break-words">{meta?.request_note || ''}</span>
+        </p>
+        {meta?.counter_description ? (
+          <>
+            <hr className="my-2 border-gray-200" />
+            <p className="flex gap-1">
+              <span className="w-fit text-gray-500">Creator&apos;s Counter:</span>
+              <span className="break-words">{meta.counter_description}</span>
+            </p>
+          </>
+        ) : null}
+      </div>
+
+      {media.length > 0 ? (
+        <div className="flex snap-x snap-mandatory gap-1 overflow-x-auto">
+          {media.map((m, i) => (
+            <img key={m?._id || i} src={getAssetUrl({ media: m, poster: m?.type === 'video' })} alt="" className="max-h-[360px] w-full shrink-0 snap-start object-cover" />
+          ))}
+        </div>
+      ) : null}
+
+      {!isMine && counterPending !== true ? (
+        <div className="mb-1 flex flex-col items-center gap-2 lg:flex-row">
+          {isRequestSent && isPartial ? (
+            <button className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground" onClick={() => openModal?.('CUSTOM_REQUEST_ACCEPT', { message })}>
+              Mark as completed
+            </button>
+          ) : isRequestSent ? (
+            <>
+              <button className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground md:w-auto md:basis-[45%]" onClick={() => openModal?.('CUSTOM_REQUEST_ACCEPT', { message })}>
+                Accept for {formatCurrency(offer)}
+              </button>
+              {meta?.is_flexible ? (
+                <button className="w-full rounded-md border py-2 text-sm font-medium md:w-auto md:basis-[25%]" onClick={() => openModal?.('COUNTER_OFFER', { message })}>
+                  Counter
+                </button>
+              ) : null}
+              <button className="w-full rounded-md border py-2 text-sm font-medium md:w-auto md:basis-[25%]" onClick={() => toast?.success?.('Request rejected')}>
+                Decline
+              </button>
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
+      <BubbleTime message={message} isMine={isMine} />
+    </div>
   );
 }
 
