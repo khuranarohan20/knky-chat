@@ -26,6 +26,17 @@ export interface ChatHostServices {
   hasPermission?(subject: string): boolean;
   /** Toast notifications; no-op when omitted. */
   toast?: { success(msg: string): void; error(msg: string): void };
+  /**
+   * Fetch an embedded entity (post/product/channel/group) for EMBEDS bubbles.
+   * The host owns the backend calls (GetSinglePost/Product/Channel/Group);
+   * the library caches the result (4h) in the store's embeds. Returns the
+   * entity object, or null if it can't be resolved.
+   */
+  fetchEmbed?(input: {
+    entityId: string;
+    subType?: 'POST' | 'PRODUCT' | 'CHANNEL' | 'GROUP' | 'VAULT' | string;
+    creatorId?: string;
+  }): Promise<unknown | null>;
 }
 
 // ---------------------------------------------------------------------------
