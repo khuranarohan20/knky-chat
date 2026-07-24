@@ -101,6 +101,18 @@ export interface IChatApiClient {
   updateNotes?(input: { userId: string; notes: string; creatorId?: string }): Promise<void>;
   /** Paginated user↔user transactions for the stats drawer. */
   getTransactionsBetweenUsers?(input: { targetUserId: string; page?: number; limit?: number; creatorId?: string }): Promise<Transactions[]>;
+  /**
+   * Shared-content gallery data for a channel, by category. Returns the raw
+   * `data[]` array (shape varies per type — the gallery narrows what it renders).
+   */
+  getSharedContent?(input: {
+    channelId: string;
+    type: 'audio' | 'media' | 'channel' | 'post' | 'service';
+    mediaSource?: 'vault' | 'direct-upload';
+    page?: number;
+    limit?: number;
+    creatorId?: string;
+  }): Promise<any[]>;
 }
 
 // ---------------------------------------------------------------------------

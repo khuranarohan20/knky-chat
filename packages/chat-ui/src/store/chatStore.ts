@@ -81,6 +81,9 @@ export interface CreatorChatState {
 
   // Stats drawer
   activeChatStats: ChatStatsInterface | null;
+
+  // "Show message" jump target (set by gallery/reply-quote, consumed by the list)
+  pendingJump: { chatId: string; messageId: string; messageTime?: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -184,6 +187,9 @@ export interface ChatStore {
 
   // Stats drawer
   setActiveChatStats: (creatorId: string, stats: ChatStatsInterface | null) => void;
+
+  // "Show message" jump
+  jumpToMessage: (creatorId: string, target: { chatId: string; messageId: string; messageTime?: string } | null) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,6 +221,7 @@ function initialCreatorState(): CreatorChatState {
     replyMessage: null,
     template: { message: '', price: 0, vault_media_ids: [] },
     activeChatStats: null,
+    pendingJump: null,
   };
 }
 
@@ -703,6 +710,13 @@ export const useChatStore = create<ChatStore>()(
       set(
         produce((draft: ChatStore) => {
           getC(draft, creatorId).activeChatStats = stats;
+        }),
+      ),
+
+    jumpToMessage: (creatorId, target) =>
+      set(
+        produce((draft: ChatStore) => {
+          getC(draft, creatorId).pendingJump = target;
         }),
       ),
   })),

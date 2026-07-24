@@ -12,6 +12,8 @@ export { ChatPerson } from './chat/ChatPerson';
 export type { ChatPersonProps } from './chat/ChatPerson';
 export { ChatStats } from './chat/ChatStats';
 export type { ChatStatsProps } from './chat/ChatStats';
+export { MediaGallery } from './chat/media-gallery';
+export type { MediaGalleryProps } from './chat/media-gallery';
 export { PinnedMessages } from './chat/PinnedMessages';
 export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';
