@@ -6,6 +6,7 @@ import { TextBubble } from './bubbles/TextBubble';
 import { MediaAttachment } from './bubbles/MediaAttachment';
 import { SentTip } from './bubbles/SentTip';
 import { ChatEmbeds } from './bubbles/ChatEmbeds';
+import { Promotion } from './bubbles/Promotion';
 import {
   ChatUnlock,
   CustomRequest,
@@ -55,6 +56,12 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   const alignWrap = (node: React.ReactNode) => (
     <div className={`flex w-full px-3 py-1 ${isMine ? 'justify-end' : 'justify-start'}`}>{node}</div>
   );
+  // Promotional requests (mass-message) take precedence over the plain
+  // VIDEO/VOICE/RATING/CUSTOM-SERVICE cards — matches the agency router.
+  const PROMOTION_TYPES = ['VIDEO', 'VOICE', 'RATING', 'CUSTOM-SERVICE'];
+  if (message.message === 'Promotion' && type && PROMOTION_TYPES.includes(type)) {
+    return alignWrap(<Promotion message={message} isMine={isMine} />);
+  }
   if (type === 'message-attachment' || type === 'MASS-MESSAGE' || hasMedia(message)) {
     return alignWrap(<MediaAttachment message={message} isMine={isMine} />);
   }

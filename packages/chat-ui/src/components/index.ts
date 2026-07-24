@@ -48,3 +48,4 @@ export {
   TagApproval,
 } from './messages/bubbles/service-bubbles';
 export { ChatEmbeds } from './messages/bubbles/ChatEmbeds';
+export { Promotion } from './messages/bubbles/Promotion';

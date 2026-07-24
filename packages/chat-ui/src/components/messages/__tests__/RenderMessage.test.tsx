@@ -100,6 +100,26 @@ describe('RenderMessage', () => {
     expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'NEW-PAYMENT' } as any })} />)).toContain('Media unlocked');
   });
 
+  it('routes Promotion (mass-message) to sender/receiver views with the offered amount', () => {
+    // Sender view (mine) shows a status badge; receiver view (theirs) shows an Accept CTA.
+    const mine = renderWithAdapter(
+      <RenderMessage
+        message={msg({ sender_id: 'me', message: 'Promotion', meta: { type: 'VIDEO', duration: 120, offered_amount: 40, requestAccept: 'sent' } as any })}
+        currentUserId="me"
+      />,
+    );
+    expect(mine).toContain('Video call');
+    expect(mine).toContain('Waiting for fan');
+    expect(mine).toContain('$40');
+
+    const theirs = renderWithAdapter(
+      <RenderMessage message={msg({ sender_id: 'other', message: 'Promotion', meta: { type: 'RATING', price: 15, requestAccept: 'sent' } as any })} currentUserId="me" />,
+    );
+    expect(theirs).toContain('Ratings');
+    expect(theirs).toContain('Accept for');
+    expect(theirs).toContain('$15');
+  });
+
   it('routes REQUEST-TIP, chat-unlock, ACCEPT_CALL, story-reply', () => {
     expect(render(<RenderMessage message={msg({ meta: { type: 'REQUEST-TIP', amount: 5 } as any })} />)).toContain('Tip request');
     expect(render(<RenderMessage message={msg({ meta: { type: 'chat-unlock' } as any })} />)).toContain('Content unlocked');
