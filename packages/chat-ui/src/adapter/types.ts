@@ -48,6 +48,12 @@ export interface ChatHostServices {
   openVault?(input: { readonly?: boolean; creatorId?: string }): Promise<{ medias: Media[] }>;
   /** Fire a host analytics event (GA4/GTM). No-op when omitted. */
   trackEvent?(event: Record<string, unknown>): void;
+  /**
+   * Fetch the target's active CHAT-FEE services (core chat-fee gating).
+   * Wraps the host's GetServiceList. Returns [] when the caller can't chat for
+   * free → the composer opens the host's chat-fee modal instead of sending.
+   */
+  getChatServices?(input: { userId: string; role?: string }): Promise<Array<{ is_active?: boolean; chat_fee_type?: string; price?: number; [k: string]: any }>>;
 }
 
 // ---------------------------------------------------------------------------

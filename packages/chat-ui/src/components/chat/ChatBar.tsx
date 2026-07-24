@@ -5,10 +5,11 @@ import { CirclePlus, PlusCircle, Send, XIcon } from 'lucide-react';
 import type { Media } from '@knky-chat/core-chat';
 import { cn } from '../../lib/utils';
 import { normalizeKnkyLinks } from '../../lib/links';
+import { getChatServiceStatus } from '../../lib/chatFee';
 import { useAdapter } from '../../adapter/AdapterContext';
 import { useChatConfig } from '../../hooks/useChatConfig';
 import { useResolvedCreatorId } from '../../hooks/useResolvedCreatorId';
-import { useActiveChannelId, useChatStore, useReplyMessage, useTargetPerson, useTemplate } from '../../store/chatStore';
+import { useActiveChannelId, useChatList, useChatStore, useReplyMessage, useTargetPerson, useTemplate } from '../../store/chatStore';
 import { Icon } from '../common/Icon';
 import {
   DropdownMenu,
@@ -25,6 +26,8 @@ const MEDIA_FEE_DEFAULT = 1;
 export interface ChatBarProps {
   creatorId?: string;
   className?: string;
+  /** Logged-in (buyer) user id — enables core chat-fee gating on send. */
+  selfId?: string;
 }
 
 /**
@@ -34,13 +37,14 @@ export interface ChatBarProps {
  * reply preview, template prefill, and the "+" options menu (promote / share /
  * device media / vault / templates).
  */
-export function ChatBar({ creatorId, className }: ChatBarProps): React.ReactElement {
+export function ChatBar({ creatorId, className, selfId }: ChatBarProps): React.ReactElement {
   const adapter = useAdapter();
   const id = useResolvedCreatorId(creatorId);
-  const { getAssetUrl, openModal, openVault, toast } = useChatConfig();
+  const { getAssetUrl, openModal, openVault, toast, getChatServices } = useChatConfig();
 
   const channelId = useActiveChannelId(id);
   const targetPerson = useTargetPerson(id);
+  const chatList = useChatList(id);
   const replyMessage = useReplyMessage(id);
   const template = useTemplate(id);
   const setReplyMessage = useChatStore((s) => s.setReplyMessage);
@@ -107,8 +111,31 @@ export function ChatBar({ creatorId, className }: ChatBarProps): React.ReactElem
     }
   }
 
+  /**
+   * Core chat-fee gate: if the target requires a fee (not a buyer / no messages
+   * left / no free chat), open the host's fee modal instead of sending. No-op
+   * when selfId/getChatServices aren't provided (agency).
+   */
+  async function feeGateBlocks(): Promise<boolean> {
+    if (!selfId || !targetPerson?._id) return false;
+    const chat = chatList.find((c) => c.converse_channel_id === channelId);
+    if (!chat) return false;
+    const status = await getChatServiceStatus({ chat, currentUserId: selfId, targetUser: targetPerson._id, getChatServices });
+    if (status.enabled) return false;
+    openModal?.('SHOW_SERVICES', {
+      targetUserId: targetPerson._id,
+      channelId,
+      authorName: targetPerson.display_name,
+      authorAvatar: targetPerson.avatar?.[0],
+      entity: 'CHAT',
+      filter: { type: 'CHAT-FEE' },
+    });
+    return true;
+  }
+
   async function sendMessage() {
     if ((!message || message.trim() === '') && !media.length) return;
+    if (await feeGateBlocks()) return;
     if (media.length > 0) {
       await sendMedia();
       return;

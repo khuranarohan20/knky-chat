@@ -16,6 +16,8 @@ export { MediaGallery } from './chat/media-gallery';
 export type { MediaGalleryProps } from './chat/media-gallery';
 export { AllCreatorsListing } from './chat/AllCreatorsListing';
 export type { AllCreatorsListingProps } from './chat/AllCreatorsListing';
+export { ChatFeeBanner } from './chat/ChatFeeBanner';
+export type { ChatFeeBannerProps } from './chat/ChatFeeBanner';
 export { PinnedMessages } from './chat/PinnedMessages';
 export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';

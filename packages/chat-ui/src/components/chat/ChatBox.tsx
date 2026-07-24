@@ -4,6 +4,7 @@ import { useChat } from '../../hooks/useChat';
 import { cn } from '../../lib/utils';
 import { ChatBar } from './ChatBar';
 import { ChatBubbles } from './ChatBubbles';
+import { ChatFeeBanner } from './ChatFeeBanner';
 import { ChatHeader } from './ChatHeader';
 import { PinnedMessages } from './PinnedMessages';
 
@@ -36,7 +37,12 @@ export function ChatBox({ creatorId, currentUserId, className }: ChatBoxProps): 
           </div>
         )}
       </div>
-      {hasActiveChannel ? <ChatBar creatorId={creatorId} /> : null}
+      {hasActiveChannel ? (
+        <>
+          <ChatFeeBanner creatorId={creatorId} selfId={currentUserId} />
+          <ChatBar creatorId={creatorId} selfId={currentUserId} />
+        </>
+      ) : null}
     </div>
   );
 }
