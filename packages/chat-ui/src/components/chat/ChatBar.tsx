@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { CirclePlus, PlusCircle, XIcon } from 'lucide-react';
+import { CirclePlus, PlusCircle, Send, XIcon } from 'lucide-react';
 
 import type { Media } from '@knky-chat/core-chat';
 import { cn } from '../../lib/utils';
@@ -131,7 +131,7 @@ export function ChatBar({ creatorId, className }: ChatBarProps): React.ReactElem
   const disabledSend = (!message || message.trim() === '') && media.length === 0;
 
   return (
-    <div className={cn('relative flex w-full items-center justify-between gap-3 rounded-b-lg border border-t bg-white p-2', className)}>
+    <div className={cn('relative flex w-full items-center justify-between gap-2 rounded-b border border-t bg-white p-3', className)}>
       {replyActive ? (
         <div
           className={cn('absolute left-0 z-10 flex h-[70px] w-full items-center justify-between gap-2 bg-[#F7F7FC] p-2', {
@@ -274,14 +274,18 @@ export function ChatBar({ creatorId, className }: ChatBarProps): React.ReactElem
         }}
       />
 
-      <img
-        src="/images/send-button.png"
-        height={24}
-        width={24}
-        alt="Send"
-        className={cn('cursor-pointer', { 'grayscale-100': disabledSend })}
+      <button
+        type="button"
+        aria-label="Send message"
+        disabled={disabledSend}
         onClick={() => void sendMessage()}
-      />
+        className={cn(
+          'flex size-9 shrink-0 items-center justify-center rounded-full transition-colors',
+          disabledSend ? 'bg-gray-200 text-gray-400' : 'bg-primary text-primary-foreground',
+        )}
+      >
+        <Send size={18} />
+      </button>
     </div>
   );
 }
