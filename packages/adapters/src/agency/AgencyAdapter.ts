@@ -143,6 +143,10 @@ export class AgencyAdapter implements IPlatformAdapter {
     return this.config.services;
   }
 
+  getApi() {
+    return this.config.api;
+  }
+
   // ---------------------------------------------------------------------------
   // State reads
   // ---------------------------------------------------------------------------

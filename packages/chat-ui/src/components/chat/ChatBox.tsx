@@ -35,7 +35,7 @@ export function ChatBox({ creatorId, currentUserId, className }: ChatBoxProps): 
           </div>
         )}
       </div>
-      <ChatBar creatorId={creatorId} disabled={!hasActiveChannel} />
+      {hasActiveChannel ? <ChatBar creatorId={creatorId} /> : null}
     </div>
   );
 }

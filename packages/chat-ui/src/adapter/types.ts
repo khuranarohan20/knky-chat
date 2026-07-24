@@ -44,6 +44,10 @@ export interface ChatHostServices {
    * mediaId → signed URL. Omit to fall back to getAssetUrl for everything.
    */
   getSignedMediaUrls?(input: { mediaIds: string[]; creatorId?: string }): Promise<Record<string, string>>;
+  /** Open the host's vault picker; resolves with the chosen media. Optional. */
+  openVault?(input: { readonly?: boolean; creatorId?: string }): Promise<{ medias: Media[] }>;
+  /** Fire a host analytics event (GA4/GTM). No-op when omitted. */
+  trackEvent?(event: Record<string, unknown>): void;
 }
 
 // ---------------------------------------------------------------------------
@@ -74,6 +78,21 @@ export interface IChatApiClient {
   getUnreadCounts?(creatorId?: string): Promise<UnreadCounts>;
   /** Optional bootstrap: converse member (userId↔channelId) pairs. */
   getConverseMembers?(creatorId?: string): Promise<ConversePair[]>;
+  /**
+   * Send a media/attachment message (device files and/or vault media, with an
+   * optional unlock fee). The host owns the S3 upload + the backend call
+   * (ChatMedia) + platform meta (sent_by/emp/chat_list_message). Text-only
+   * messages go through the socket connection, not this method.
+   */
+  sendMediaMessage?(input: {
+    channelId: string;
+    creatorId?: string;
+    message: string;
+    files?: File[];
+    vaultMediaIds?: string[];
+    mediaFee?: number;
+    replyMessage?: MessageInterface | null;
+  }): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -186,6 +205,8 @@ export interface IPlatformAdapter {
   isFeatureEnabled(feature: keyof ChatFeatures): boolean;
   /** Host integration services (assets, modals, permissions, toasts). */
   getServices(): ChatHostServices;
+  /** Host-provided API client (chat list, channel details, media send). */
+  getApi(): IChatApiClient;
 
   // Convenience state reads (delegates to Zustand)
   getChatList(creatorId?: string): Chat[];

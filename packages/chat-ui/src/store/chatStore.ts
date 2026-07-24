@@ -9,6 +9,7 @@ import type {
   ChatTab,
   ConversePair,
   FilterInterface,
+  Media,
   MessageInterface,
   Receipt,
 } from '@knky-chat/core-chat';
@@ -72,6 +73,10 @@ export interface CreatorChatState {
   // Tabs
   chatTabs: ChatTab[];
   tabCounts: Record<string, ChatListCountInterface>; // tab._id -> count
+
+  // Composer
+  replyMessage: { channelId: string; message: MessageInterface } | null;
+  template: { message: string; price: number; vault_media_ids: Media[] };
 }
 
 // ---------------------------------------------------------------------------
@@ -168,6 +173,10 @@ export interface ChatStore {
   // Tabs
   setChatTabs: (creatorId: string, tabs: ChatTab[]) => void;
   setTabCount: (creatorId: string, tabId: string, count: ChatListCountInterface) => void;
+
+  // Composer
+  setReplyMessage: (creatorId: string, reply: { channelId: string; message: MessageInterface } | null) => void;
+  setTemplate: (creatorId: string, template: { message: string; price: number; vault_media_ids: Media[] }) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +205,8 @@ function initialCreatorState(): CreatorChatState {
     embeds: [],
     chatTabs: [],
     tabCounts: {},
+    replyMessage: null,
+    template: { message: '', price: 0, vault_media_ids: [] },
   };
 }
 
@@ -661,6 +672,24 @@ export const useChatStore = create<ChatStore>()(
           getC(draft, creatorId).tabCounts[tabId] = count;
         }),
       ),
+
+    // ---------------------------------------------------------------------------
+    // Composer
+    // ---------------------------------------------------------------------------
+
+    setReplyMessage: (creatorId, reply) =>
+      set(
+        produce((draft: ChatStore) => {
+          getC(draft, creatorId).replyMessage = reply;
+        }),
+      ),
+
+    setTemplate: (creatorId, template) =>
+      set(
+        produce((draft: ChatStore) => {
+          getC(draft, creatorId).template = template;
+        }),
+      ),
   })),
 );
 
@@ -724,3 +753,11 @@ export const useOnlineUsers = (creatorId: string) =>
 
 export const useEmbeds = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.embeds ?? EMPTY_EMBEDS);
+
+const DEFAULT_TEMPLATE: { message: string; price: number; vault_media_ids: Media[] } = { message: '', price: 0, vault_media_ids: [] };
+
+export const useReplyMessage = (creatorId: string) =>
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.replyMessage ?? null);
+
+export const useTemplate = (creatorId: string) =>
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.template ?? DEFAULT_TEMPLATE);
