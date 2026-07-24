@@ -73,7 +73,7 @@ export function MediaAttachment({ message, isMine }: { message: MessageInterface
   const srcFor = (m: Media): string =>
     needsSigned(m, true) ? signedUrlFor(m) ?? '' : getAssetUrl({ media: m, poster: m?.type === 'video', variation: locked ? 'blur' : 'compressed' });
 
-  const cardCls = cn('overflow-hidden rounded-xl shadow max-w-sm', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black');
+  const cardCls = cn('overflow-hidden rounded-lg shadow max-w-sm', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black');
 
   // Audio — waveform player (matches agency WaveAudioPlayer branch).
   if (media.some((m) => m?.type === 'audio')) {

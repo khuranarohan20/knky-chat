@@ -11,7 +11,7 @@ export function SentTip({ message, isMine }: { message: MessageInterface; isMine
   const showDetails = details && `Tipped you $${message?.meta?.amount}` !== message?.meta?.chat_list_message;
 
   return (
-    <div className="relative w-sm rounded-xl bg-[#fff6e0] py-6">
+    <div className="relative w-sm rounded-lg bg-[#fff6e0] py-6">
       <div className="flex items-center gap-2">
         <TipIcon />
         <div className="flex flex-col">

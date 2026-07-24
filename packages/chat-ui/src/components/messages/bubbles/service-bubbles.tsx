@@ -26,7 +26,7 @@ export function VideoVoiceBubble({ message, isMine }: CardProps): React.ReactEle
   const mins = message?.meta?.duration ? Math.ceil(message.meta.duration / 60) : 0;
 
   return (
-    <div className={cn('relative w-sm rounded-xl border p-1', isMine ? 'bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+    <div className={cn('relative w-sm rounded-lg border p-1', isMine ? 'bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
       {message?.meta?.free_service ? (
         <div className="absolute left-0 top-0 z-10 m-2 rounded-md bg-secondary px-2 py-1 text-white">Free Service</div>
       ) : null}
@@ -115,7 +115,7 @@ export function RatingRequest({ message, isMine }: CardProps): React.ReactElemen
   );
 
   return (
-    <div className={cn('relative w-sm rounded-xl p-1 pt-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+    <div className={cn('relative w-sm rounded-lg p-1 pt-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
       {accept === 'sent' ? badge(isMine ? 'Waiting for creator' : 'New', isMine ? 'rgba(255,168,0,1)' : 'rgba(136,77,255,1)', isMine ? 'rgba(255,168,0,0.12)' : 'rgba(136,77,255,0.2)') : null}
       {accept === false ? badge('Declined', 'rgba(245,34,45,1)', 'rgba(245,34,45,0.2)') : null}
       {accept === true ? badge('Completed', 'rgba(86,194,45,1)', 'rgba(86,194,45,0.2)') : null}
@@ -273,7 +273,7 @@ export function JoinCallBtn({ message, isMine }: CardProps): React.ReactElement 
   const { toast } = useChatConfig();
   const isVoice = message?.message === 'Voice Call';
   return (
-    <div className={cn('flex w-sm flex-col gap-2 rounded-xl p-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+    <div className={cn('flex w-sm flex-col gap-2 rounded-lg p-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
       <div className="flex items-center gap-2">
         <div className="flex items-center justify-center">{isVoice ? <AudioSent /> : <VideoSent />}</div>
         <div className="font-bold">{isVoice ? 'Voice Call' : 'Video Call'}</div>

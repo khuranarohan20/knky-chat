@@ -95,7 +95,7 @@ export function Promotion({ message, isMine }: { message: MessageInterface; isMi
   if (isMine) {
     // Sender (creator) view — status badge top-right.
     return (
-      <div className="relative ms-auto mt-1 grid h-full w-sm gap-3 rounded-xl border bg-white p-3 break-words">
+      <div className="relative ms-auto mt-1 grid h-full w-sm gap-3 rounded-lg border bg-white p-3 break-words">
         {header}
         <div className="absolute right-0 top-0 m-2">
           {isRequestSent ? (
