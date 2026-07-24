@@ -50,22 +50,20 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   const isMine = !!currentUserId && senderId === currentUserId;
   const type = message.meta?.type;
 
-  // Media renders as a standalone card (own container + timestamp), not inside
-  // the text bubble frame — matches the agency MessageAttachment.
-  const isMediaCard = type === 'message-attachment' || type === 'MASS-MESSAGE' || hasMedia(message);
-  if (isMediaCard) {
-    return (
-      <div className={`flex w-full px-3 py-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
-        <MediaAttachment message={message} isMine={isMine} />
-      </div>
-    );
+  // Card-style bubbles render standalone (own container + timestamp), not inside
+  // the text bubble frame — matches the agency's card bubbles.
+  const alignWrap = (node: React.ReactNode) => (
+    <div className={`flex w-full px-3 py-1 ${isMine ? 'justify-end' : 'justify-start'}`}>{node}</div>
+  );
+  if (type === 'message-attachment' || type === 'MASS-MESSAGE' || hasMedia(message)) {
+    return alignWrap(<MediaAttachment message={message} isMine={isMine} />);
+  }
+  if (type === 'SENT-TIP') {
+    return alignWrap(<SentTip message={message} isMine={isMine} />);
   }
 
   let content: React.ReactNode;
   switch (type) {
-    case 'SENT-TIP':
-      content = <SentTip message={message} />;
-      break;
     case 'REQUEST-TIP':
       content = <RequestTip message={message} />;
       break;

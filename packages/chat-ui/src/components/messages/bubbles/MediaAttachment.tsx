@@ -3,25 +3,10 @@ import { Loader } from 'lucide-react';
 
 import type { Media, MessageInterface } from '@knky-chat/core-chat';
 import { cn } from '../../../lib/utils';
+import { formatCurrency as money, formatDuration as duration } from '../../../lib/format';
 import { useChatConfig } from '../../../hooks/useChatConfig';
 import { Icon } from '../../common/Icon';
 import { BubbleTime } from '../BubbleTime';
-
-function money(n?: number): string {
-  const v = Number(n ?? 0);
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: v % 1 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(v);
-}
-
-function duration(sec?: number): string {
-  const s = Math.max(0, Math.floor(Number(sec ?? 0)));
-  const m = Math.floor(s / 60);
-  return `${m}:${String(s % 60).padStart(2, '0')}`;
-}
 
 function resolutionLabel(res?: { width: number; height: number }): string {
   return res?.height ? `${res.height}p` : '';
