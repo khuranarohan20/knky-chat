@@ -30,8 +30,9 @@ export function ChatBox({ creatorId, currentUserId, className }: ChatBoxProps): 
         {hasActiveChannel ? (
           <ChatBubbles creatorId={creatorId} currentUserId={currentUserId} />
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-muted-foreground">Select a conversation</p>
+          <div className="flex h-full flex-col items-center justify-center gap-2 rounded bg-white">
+            <img src="/images/knky.svg" alt="KNKY" height={50} className="h-[50px]" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')} />
+            <p className="text-[0.9rem] text-black/50">Select a chat to get started!</p>
           </div>
         )}
       </div>

@@ -57,8 +57,10 @@ export function ChatBubbles({ creatorId, currentUserId, className }: ChatBubbles
       return <ChatBubbleShimmer className={className} />;
     }
     return (
-      <div className={cn('flex h-full w-full items-center justify-center', className)}>
-        <p className="text-sm text-muted-foreground">No messages yet</p>
+      <div className={cn('flex h-full w-full flex-col items-center justify-center text-center text-[1.25rem] font-bold', className)}>
+        <div>🥳</div>
+        <div>Don&apos;t be shy</div>
+        <div>Just start with a 👋🏻</div>
       </div>
     );
   }
