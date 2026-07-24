@@ -25,22 +25,21 @@ export function ChatListFilters({ creatorId, className }: ChatListFiltersProps):
   const active = filter.readStatus ?? 'all';
 
   return (
-    <div className={cn('flex gap-1 px-2 pb-2', className)}>
-      {OPTIONS.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => useChatStore.getState().setFilter(id, { readStatus: o.value })}
-          className={cn(
-            'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-            active === o.value
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-muted-foreground hover:bg-muted/70',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div className={cn('mx-3 flex items-center gap-4 border-b', className)}>
+      {OPTIONS.map((o) => {
+        const isActive = active === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => useChatStore.getState().setFilter(id, { readStatus: o.value })}
+            className={cn('relative cursor-pointer text-nowrap py-2 text-[0.9rem]', isActive ? 'font-semibold text-black' : 'text-[#4D5053]')}
+            style={isActive ? { borderBottom: '2px solid #000' } : { borderBottom: '2px solid transparent' }}
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

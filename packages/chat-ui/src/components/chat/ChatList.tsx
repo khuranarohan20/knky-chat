@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 
 import { useChat } from '../../hooks/useChat';
 import { useShowChat } from '../../hooks/useShowChat';
@@ -44,17 +45,19 @@ export function ChatList({ creatorId, className, showFilters = true, selfId }: C
     <div className={cn('flex h-full flex-col bg-background', className)}>
       {showFilters ? (
         <div className="border-b">
-          <div className="p-2">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              aria-label="Search chats"
-              className={cn(
-                'w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm outline-none',
-                'placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-              )}
-            />
+          <div className="m-3 flex items-center justify-between gap-2">
+            <span className="text-[1.25rem] font-semibold">Chat</span>
+            <div className="relative w-full" style={{ maxWidth: '24rem' }}>
+              <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search"
+                aria-label="Search chats"
+                className="w-full rounded-md border-0 bg-[#f1f1f4] p-2 pl-11 text-[0.9rem] outline-none placeholder:text-muted-foreground"
+              />
+            </div>
           </div>
           <ChatListFilters creatorId={id} />
         </div>
@@ -73,6 +76,7 @@ export function ChatList({ creatorId, className, showFilters = true, selfId }: C
                 key={chat.converse_channel_id}
                 chat={chat}
                 person={person}
+                selfId={self}
                 active={chat.converse_channel_id === activeChannelId}
                 online={!!person?._id && onlineUsers.has(person._id)}
                 avatarUrl={getAssetUrl({ media: person?.avatar?.[0], defaultType: 'avatar' })}
