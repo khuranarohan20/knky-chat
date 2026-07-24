@@ -10,6 +10,11 @@ export {
   useChatFilter,
   useTotalUnreadCount,
   useOnlineUsers,
+  useEmbeds,
+  useReplyMessage,
+  useTemplate,
+  useActiveChatStats,
+  useCreators,
 } from './chatStore';
 
-export type { ChatStore, CreatorChatState, PinnedMessage } from './chatStore';
+export type { ChatStore, CreatorChatState, PinnedMessage, CreatorSummary } from './chatStore';

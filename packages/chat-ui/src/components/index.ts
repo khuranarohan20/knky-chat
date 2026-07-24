@@ -14,6 +14,8 @@ export { ChatStats } from './chat/ChatStats';
 export type { ChatStatsProps } from './chat/ChatStats';
 export { MediaGallery } from './chat/media-gallery';
 export type { MediaGalleryProps } from './chat/media-gallery';
+export { AllCreatorsListing } from './chat/AllCreatorsListing';
+export type { AllCreatorsListingProps } from './chat/AllCreatorsListing';
 export { PinnedMessages } from './chat/PinnedMessages';
 export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';

@@ -90,10 +90,22 @@ export interface CreatorChatState {
 // Top-level store shape
 // ---------------------------------------------------------------------------
 
+/** Summary of a managed creator, for the agency multi-creator rail. */
+export interface CreatorSummary {
+  id: string;
+  display_name: string;
+  avatar?: Media[];
+  badges?: import('@knky-chat/core-chat').BadgesType;
+  connecting?: boolean;
+}
+
 export interface ChatStore {
   // Multi-creator state — core uses "__core__" as the only key
   currentCreatorId: string | null;
   chatDataByCreator: Record<string, CreatorChatState>;
+
+  // Managed creators (agency rail) — host-populated
+  creators: CreatorSummary[];
 
   // Global loading (agency: "loading all creators")
   completeChatLoading: boolean;
@@ -113,6 +125,7 @@ export interface ChatStore {
   setCurrentCreatorId: (creatorId: string) => void;
   setCompleteChatLoading: (loading: boolean) => void;
   setShowSharedContent: (show: boolean) => void;
+  setCreators: (creators: CreatorSummary[]) => void;
 
   // ---------------------------------------------------------------------------
   // Per-creator actions — all take creatorId as first arg
@@ -256,6 +269,7 @@ export const useChatStore = create<ChatStore>()(
   subscribeWithSelector((set, get) => ({
     currentCreatorId: null,
     chatDataByCreator: {},
+    creators: [],
     completeChatLoading: false,
     showSharedContent: false,
 
@@ -289,6 +303,9 @@ export const useChatStore = create<ChatStore>()(
 
     setShowSharedContent: (show) =>
       set(produce((draft: ChatStore) => { draft.showSharedContent = show; })),
+
+    setCreators: (creators) =>
+      set(produce((draft: ChatStore) => { draft.creators = creators; })),
 
     // ---------------------------------------------------------------------------
     // Creator lifecycle
@@ -793,3 +810,6 @@ export const useTemplate = (creatorId: string) =>
 
 export const useActiveChatStats = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.activeChatStats ?? null);
+
+const EMPTY_CREATORS: CreatorSummary[] = [];
+export const useCreators = () => useChatStore((s) => s.creators ?? EMPTY_CREATORS);
