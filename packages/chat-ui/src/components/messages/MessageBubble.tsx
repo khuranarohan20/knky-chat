@@ -10,11 +10,13 @@ interface MessageBubbleProps {
   children: React.ReactNode;
 }
 
-/** Reply-quote strip shown above a message that replies to another. */
+/** Reply-quote strip shown above a message that replies to another (knky: #E7E7F8 fill, 3px #131416 left bar, magenta text). */
 function ReplyQuote({ reply }: { reply: MessageInterface }): React.ReactElement {
+  const who = (reply as any)?.name || '';
   return (
-    <div className="mb-1 rounded border-l-[3px] border-[#ac1991] bg-[#AC19911A] p-2">
-      <p className="truncate text-xs text-gray-600">{reply.message || 'Attachment'}</p>
+    <div className="mb-1 max-w-[20rem] rounded border-l-[3px] border-[#131416] bg-[#E7E7F8] p-2">
+      {who ? <div className="truncate text-[0.8rem] font-semibold text-[#ac1991]">{who}</div> : null}
+      <p className="truncate text-[0.8rem] text-[#ac1991]">{reply.message || 'Attachment'}</p>
     </div>
   );
 }
@@ -26,7 +28,7 @@ function Reactions({ reactions, isMine }: { reactions: Array<{ emote: string }>;
       {reactions.map((r, i) => (
         <span
           key={i}
-          className="flex items-center rounded-full border bg-white px-2 py-0.5 text-xs shadow-sm"
+          className={cn('flex items-center rounded-full px-2 py-0.5 text-[0.8rem] shadow-sm', isMine ? 'bg-[#f9f4f8]' : 'bg-white')}
         >
           {r.emote}
         </span>
@@ -46,11 +48,11 @@ export function MessageBubble({ message, isMine, children }: MessageBubbleProps)
 
   return (
     <div className={cn('flex w-full px-3 py-1', isMine ? 'justify-end' : 'justify-start')}>
-      <div className="flex max-w-md flex-col">
+      <div className="flex max-w-[20rem] flex-col">
         <div
           className={cn(
-            'rounded-lg px-4 py-2 text-sm break-words',
-            isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black',
+            'break-words rounded p-2 text-[0.9rem]',
+            isMine ? 'border border-[#ebebec] bg-white text-black' : 'bg-[#f5f5f6] text-black',
           )}
         >
           {reply ? <ReplyQuote reply={reply} /> : null}

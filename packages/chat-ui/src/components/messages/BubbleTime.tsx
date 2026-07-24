@@ -12,7 +12,7 @@ interface BubbleTimeProps {
 /** Timestamp + (for own messages) a seen/sent tick — blue when seen. */
 export function BubbleTime({ message, isMine }: BubbleTimeProps): React.ReactElement {
   const time = message.createdAt
-    ? new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    ? new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
     : '';
 
   const seen =
@@ -21,7 +21,7 @@ export function BubbleTime({ message, isMine }: BubbleTimeProps): React.ReactEle
   return (
     <div
       className={cn(
-        'mt-1 flex items-center gap-1 text-xs text-muted-foreground',
+        'mt-1 flex items-center gap-1 text-[0.8rem] text-muted-foreground',
         isMine ? 'justify-end' : 'justify-start',
       )}
     >
