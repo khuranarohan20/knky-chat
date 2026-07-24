@@ -1,6 +1,23 @@
-import type { Chat, ConversePair, MessageInterface, MetaInterface } from '@knky-chat/core-chat';
+import type { Chat, ConversePair, Media, MessageInterface, MetaInterface } from '@knky-chat/core-chat';
 import type { SocketEventBridge } from '../bridge/SocketEventBridge';
 import type { ChatConnection, ConnectionManager } from '@knky-chat/core-chat';
+
+// ---------------------------------------------------------------------------
+// Host services — app-specific integration points the library calls but does
+// not own (asset/CDN URLs, host modals, permission gating, toasts). Injected
+// via config so ported components behave exactly like the host app.
+// ---------------------------------------------------------------------------
+
+export interface ChatHostServices {
+  /** Resolve an asset URL (avatar/media) — host owns the CDN + signing. */
+  getAssetUrl(input: { media?: Media; defaultType?: 'avatar' | 'media' | 'post' }): string;
+  /** Open a host modal by key (e.g. SET_ALIAS_NAME, DELETE_ENTIRE_CHAT, CREATE_CUSTOM_LIST). */
+  openModal?(key: string, payload?: unknown): void;
+  /** Permission check (agency); default allow when omitted. */
+  hasPermission?(subject: string): boolean;
+  /** Toast notifications; no-op when omitted. */
+  toast?: { success(msg: string): void; error(msg: string): void };
+}
 
 // ---------------------------------------------------------------------------
 // Host API contract — the library never talks to the backend directly; the
@@ -91,6 +108,8 @@ export interface BasePlatformConfig {
   features: Partial<ChatFeatures>;
   /** Host-provided API client — how the library reads chat data from the backend. */
   api: IChatApiClient;
+  /** Host-provided integration services (assets, modals, permissions, toasts). */
+  services: ChatHostServices;
 }
 
 export interface CorePlatformConfig extends BasePlatformConfig {
@@ -138,6 +157,8 @@ export interface IPlatformAdapter {
   getMaxPinMessages(): number;    // 20 (core) | 5 (agency)
   getFlushMs(): number;           // 100 (core) | 120 (agency)
   isFeatureEnabled(feature: keyof ChatFeatures): boolean;
+  /** Host integration services (assets, modals, permissions, toasts). */
+  getServices(): ChatHostServices;
 
   // Convenience state reads (delegates to Zustand)
   getChatList(creatorId?: string): Chat[];

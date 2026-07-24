@@ -9,5 +9,6 @@ export type {
   IChatApiClient,
   ChatListParams,
   UnreadCounts,
+  ChatHostServices,
 } from './types';
 export { AdapterProvider, useAdapter, useOptionalAdapter } from './AdapterContext';

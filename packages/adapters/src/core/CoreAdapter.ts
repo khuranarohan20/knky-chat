@@ -161,6 +161,10 @@ export class CoreAdapter implements IPlatformAdapter {
     return this.features[feature] ?? false;
   }
 
+  getServices() {
+    return this.config.services;
+  }
+
   // ---------------------------------------------------------------------------
   // State reads (delegates to Zustand)
   // ---------------------------------------------------------------------------

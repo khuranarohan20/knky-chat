@@ -14,6 +14,7 @@ function makeAgencyAdapter(api: FakeApi = makeFakeApi()) {
     converseHost: 'wss://socket.test',
     features: {},
     api,
+    services: { getAssetUrl: () => '' },
     ConverseClass: FakeConverse as unknown as new () => any,
     agentId: 'agent1',
     agentName: 'Agent One',

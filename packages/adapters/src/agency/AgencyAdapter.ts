@@ -139,6 +139,10 @@ export class AgencyAdapter implements IPlatformAdapter {
     return this.features[feature] ?? false;
   }
 
+  getServices() {
+    return this.config.services;
+  }
+
   // ---------------------------------------------------------------------------
   // State reads
   // ---------------------------------------------------------------------------

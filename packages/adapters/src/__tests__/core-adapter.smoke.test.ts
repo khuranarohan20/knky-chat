@@ -14,6 +14,7 @@ function makeAdapter(api: FakeApi = makeFakeApi()) {
     converseHost: 'wss://socket.test',
     features: {},
     api,
+    services: { getAssetUrl: () => '' },
     ConverseClass: FakeConverse as unknown as new () => any,
     auth: {
       getConverseToken: async () => 'tok-123',

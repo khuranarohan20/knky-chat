@@ -11,6 +11,10 @@ const adapter = new CoreAdapter({
   converseHost: 'mock',
   features: {},
   api: mockApi,
+  services: {
+    getAssetUrl: ({ media }) => media?.url ?? '',
+    toast: { success: (m) => console.log('✓', m), error: (m) => console.error('✗', m) },
+  },
   ConverseClass: FakeConverse as unknown as new () => any,
   auth: {
     getConverseToken: async () => 'mock-token',
