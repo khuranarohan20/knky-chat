@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { useAdapter } from '../adapter/AdapterContext';
 import { useChatStore } from '../store/chatStore';
+import { otherParticipant } from '../lib/participant';
 import { useResolvedCreatorId } from './useResolvedCreatorId';
 
 /**
@@ -23,11 +24,11 @@ export function useShowChat(creatorId?: string) {
       const store = useChatStore.getState();
       store.setActiveChannelId(id, channelId);
 
-      // Set the header's target person from the chat list entry, if present.
+      // Set the header's target person = the fan (the participant that isn't me).
       const chat = store
         .getCreatorState(id)
         .chatList.find((c) => c.converse_channel_id === channelId);
-      if (chat?.target) store.setTargetPerson(id, chat.target);
+      if (chat) store.setTargetPerson(id, otherParticipant(chat, id) ?? chat.target ?? null);
 
       store.setMessagesLoading(id, true);
       try {

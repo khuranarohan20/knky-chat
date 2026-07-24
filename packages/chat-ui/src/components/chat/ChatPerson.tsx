@@ -1,14 +1,16 @@
 import React from 'react';
 
-import type { Chat } from '@knky-chat/core-chat';
+import type { Chat, ChatPerson as ChatPersonType } from '@knky-chat/core-chat';
 import { cn } from '../../lib/utils';
 import { Avatar } from './Avatar';
 
 export interface ChatPersonProps {
   chat: Chat;
+  /** The participant to display (the fan = the side that isn't me). */
+  person?: ChatPersonType | null;
   active?: boolean;
   online?: boolean;
-  /** Pre-resolved avatar URL (from the host's getAssetUrl); falls back to the raw target avatar. */
+  /** Pre-resolved avatar URL (from the host's getAssetUrl). */
   avatarUrl?: string;
   onSelect?: (chat: Chat) => void;
   className?: string;
@@ -27,8 +29,9 @@ function formatChatTime(iso?: string): string {
 }
 
 /** A chat-list row — avatar (+online dot), name, last-message preview, time, unread badge. */
-export function ChatPerson({ chat, active = false, online = false, avatarUrl, onSelect, className }: ChatPersonProps): React.ReactElement {
-  const name = chat.target?.display_name || chat.target?.username || 'Unknown';
+export function ChatPerson({ chat, person, active = false, online = false, avatarUrl, onSelect, className }: ChatPersonProps): React.ReactElement {
+  const who = person ?? chat.target;
+  const name = who?.display_name || who?.username || 'Unknown';
   const msg = typeof chat.message === 'object' ? chat.message : undefined;
   const last = msg?.meta?.chat_list_message ?? msg?.message ?? '';
   const unread = chat.unreadCount ?? 0;
@@ -45,7 +48,7 @@ export function ChatPerson({ chat, active = false, online = false, avatarUrl, on
       )}
     >
       <div className="relative size-14 shrink-0">
-        <Avatar url={avatarUrl ?? chat.target?.avatar?.[0]?.url} name={name} className="size-14 text-sm" />
+        <Avatar url={avatarUrl ?? who?.avatar?.[0]?.url} name={name} className="size-14 text-sm" />
         {online ? (
           <span className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-white bg-green-500" />
         ) : null}

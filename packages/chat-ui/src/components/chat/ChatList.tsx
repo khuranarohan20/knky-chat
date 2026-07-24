@@ -5,6 +5,7 @@ import { useShowChat } from '../../hooks/useShowChat';
 import { useChatConfig } from '../../hooks/useChatConfig';
 import { cn } from '../../lib/utils';
 import { filterChats } from '../../lib/filterChats';
+import { otherParticipant } from '../../lib/participant';
 import { useChatListLoading, useOnlineUsers } from '../../store/chatStore';
 import { ChatListFilters } from './ChatListFilters';
 import { ChatPerson } from './ChatPerson';
@@ -58,16 +59,20 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
         ) : visible.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">No chats</p>
         ) : (
-          visible.map((chat) => (
-            <ChatPerson
-              key={chat.converse_channel_id}
-              chat={chat}
-              active={chat.converse_channel_id === activeChannelId}
-              online={!!chat.target?._id && onlineUsers.has(chat.target._id)}
-              avatarUrl={getAssetUrl({ media: chat.target?.avatar?.[0], defaultType: 'avatar' })}
-              onSelect={() => void openChat(chat.converse_channel_id, chat.unreadCount ?? 0)}
-            />
-          ))
+          visible.map((chat) => {
+            const person = otherParticipant(chat, id);
+            return (
+              <ChatPerson
+                key={chat.converse_channel_id}
+                chat={chat}
+                person={person}
+                active={chat.converse_channel_id === activeChannelId}
+                online={!!person?._id && onlineUsers.has(person._id)}
+                avatarUrl={getAssetUrl({ media: person?.avatar?.[0], defaultType: 'avatar' })}
+                onSelect={() => void openChat(chat.converse_channel_id, chat.unreadCount ?? 0)}
+              />
+            );
+          })
         )}
       </div>
     </div>
