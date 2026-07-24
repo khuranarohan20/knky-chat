@@ -8,6 +8,8 @@ export interface ChatPersonProps {
   chat: Chat;
   active?: boolean;
   online?: boolean;
+  /** Pre-resolved avatar URL (from the host's getAssetUrl); falls back to the raw target avatar. */
+  avatarUrl?: string;
   onSelect?: (chat: Chat) => void;
   className?: string;
 }
@@ -25,7 +27,7 @@ function formatChatTime(iso?: string): string {
 }
 
 /** A chat-list row — avatar (+online dot), name, last-message preview, time, unread badge. */
-export function ChatPerson({ chat, active = false, online = false, onSelect, className }: ChatPersonProps): React.ReactElement {
+export function ChatPerson({ chat, active = false, online = false, avatarUrl, onSelect, className }: ChatPersonProps): React.ReactElement {
   const name = chat.target?.display_name || chat.target?.username || 'Unknown';
   const msg = typeof chat.message === 'object' ? chat.message : undefined;
   const last = msg?.meta?.chat_list_message ?? msg?.message ?? '';
@@ -43,7 +45,7 @@ export function ChatPerson({ chat, active = false, online = false, onSelect, cla
       )}
     >
       <div className="relative size-14 shrink-0">
-        <Avatar url={chat.target?.avatar?.[0]?.url} name={name} className="size-14 text-sm" />
+        <Avatar url={avatarUrl ?? chat.target?.avatar?.[0]?.url} name={name} className="size-14 text-sm" />
         {online ? (
           <span className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-white bg-green-500" />
         ) : null}

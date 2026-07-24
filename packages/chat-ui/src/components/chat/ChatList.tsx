@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { useChat } from '../../hooks/useChat';
 import { useShowChat } from '../../hooks/useShowChat';
+import { useChatConfig } from '../../hooks/useChatConfig';
 import { cn } from '../../lib/utils';
 import { filterChats } from '../../lib/filterChats';
 import { useChatListLoading, useOnlineUsers } from '../../store/chatStore';
@@ -25,6 +26,7 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
   const { chatList, activeChannelId, filter, creatorId: id } = useChat(creatorId);
   const loading = useChatListLoading(id);
   const onlineUsers = useOnlineUsers(id);
+  const { getAssetUrl } = useChatConfig();
   const { openChat } = useShowChat(creatorId);
   const [search, setSearch] = useState('');
 
@@ -62,6 +64,7 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
               chat={chat}
               active={chat.converse_channel_id === activeChannelId}
               online={!!chat.target?._id && onlineUsers.has(chat.target._id)}
+              avatarUrl={getAssetUrl({ media: chat.target?.avatar?.[0], defaultType: 'avatar' })}
               onSelect={() => void openChat(chat.converse_channel_id, chat.unreadCount ?? 0)}
             />
           ))

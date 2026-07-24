@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { ChatPerson } from '@knky-chat/core-chat';
 import { useChat } from '../../hooks/useChat';
+import { useChatConfig } from '../../hooks/useChatConfig';
 import { cn } from '../../lib/utils';
 import { Avatar } from './Avatar';
 
@@ -13,6 +14,7 @@ export interface ChatHeaderProps {
 /** Header for the active chat — target person's avatar + name. */
 export function ChatHeader({ creatorId, className }: ChatHeaderProps): React.ReactElement {
   const { targetPerson } = useChat(creatorId);
+  const { getAssetUrl } = useChatConfig();
 
   if (!targetPerson) {
     return <div className={cn('h-[57px] border-b bg-background', className)} />;
@@ -23,7 +25,7 @@ export function ChatHeader({ creatorId, className }: ChatHeaderProps): React.Rea
 
   return (
     <div className={cn('flex items-center gap-3 border-b bg-white p-3', className)}>
-      <Avatar url={person.avatar?.[0]?.url} name={name} className="size-11" />
+      <Avatar url={getAssetUrl({ media: person.avatar?.[0], defaultType: 'avatar' })} name={name} className="size-11" />
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-gray-900">{name}</p>
         {person.username ? (
