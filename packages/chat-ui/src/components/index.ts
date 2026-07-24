@@ -18,6 +18,8 @@ export { AllCreatorsListing } from './chat/AllCreatorsListing';
 export type { AllCreatorsListingProps } from './chat/AllCreatorsListing';
 export { ChatFeeBanner } from './chat/ChatFeeBanner';
 export type { ChatFeeBannerProps } from './chat/ChatFeeBanner';
+export { SubscriptionPrompt } from './chat/SubscriptionPrompt';
+export type { SubscriptionPromptProps } from './chat/SubscriptionPrompt';
 export { PinnedMessages } from './chat/PinnedMessages';
 export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';

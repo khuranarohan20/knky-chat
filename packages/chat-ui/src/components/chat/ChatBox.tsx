@@ -7,6 +7,7 @@ import { ChatBubbles } from './ChatBubbles';
 import { ChatFeeBanner } from './ChatFeeBanner';
 import { ChatHeader } from './ChatHeader';
 import { PinnedMessages } from './PinnedMessages';
+import { SubscriptionPrompt } from './SubscriptionPrompt';
 
 export interface ChatBoxProps {
   creatorId?: string;
@@ -39,6 +40,7 @@ export function ChatBox({ creatorId, currentUserId, className }: ChatBoxProps): 
       </div>
       {hasActiveChannel ? (
         <>
+          <SubscriptionPrompt creatorId={creatorId} selfId={currentUserId} />
           <ChatFeeBanner creatorId={creatorId} selfId={currentUserId} />
           <ChatBar creatorId={creatorId} selfId={currentUserId} />
         </>
