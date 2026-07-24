@@ -16,6 +16,10 @@ export { Avatar } from './chat/Avatar';
 export type { AvatarProps } from './chat/Avatar';
 export { MediaRenderer } from './chat-variations/MediaRenderer';
 
+// Shared primitives
+export { Icon } from './common/Icon';
+export type { IconProps, IconFolder, IconType } from './common/Icon';
+
 // Loading skeletons
 export { ChatBubbleShimmer } from './shimmers/ChatBubbleShimmer';
 export { ChatListShimmer } from './shimmers/ChatListShimmer';
