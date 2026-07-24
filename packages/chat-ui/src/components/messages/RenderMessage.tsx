@@ -5,8 +5,8 @@ import { MessageBubble } from './MessageBubble';
 import { TextBubble } from './bubbles/TextBubble';
 import { MediaAttachment } from './bubbles/MediaAttachment';
 import { SentTip } from './bubbles/SentTip';
+import { ChatEmbeds } from './bubbles/ChatEmbeds';
 import {
-  ChatEmbeds,
   ChatUnlock,
   CustomRequest,
   JoinCallBtn,
@@ -79,14 +79,14 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   if (type === 'CUSTOM-SERVICE') {
     return alignWrap(<CustomRequest message={message} isMine={isMine} />);
   }
+  if (type === 'EMBEDS') {
+    return alignWrap(<ChatEmbeds message={message} isMine={isMine} />);
+  }
 
   let content: React.ReactNode;
   switch (type) {
     case 'REQUEST-TIP':
       content = <RequestTip message={message} />;
-      break;
-    case 'EMBEDS':
-      content = <ChatEmbeds message={message} />;
       break;
     case 'chat-unlock':
       content = <ChatUnlock message={message} />;

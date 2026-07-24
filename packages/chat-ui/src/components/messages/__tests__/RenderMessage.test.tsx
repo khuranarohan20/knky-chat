@@ -8,6 +8,7 @@ import { AdapterProvider } from '../../../adapter/AdapterContext';
 
 // Minimal adapter for context-bound bubbles (media uses useChatConfig).
 const fakeAdapter = {
+  getCreatorId: () => '__core__',
   getServices: () => ({ getAssetUrl: ({ media }: { media?: { url?: string } }) => media?.url ?? '' }),
 } as any;
 const renderWithAdapter = (el: React.ReactElement) =>
@@ -93,7 +94,8 @@ describe('RenderMessage', () => {
   it('routes RATING / CUSTOM-SERVICE / EMBEDS / NEW-PAYMENT', () => {
     expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'RATING' } as any })} />)).toContain('Ratings');
     expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'CUSTOM-SERVICE', request_note: 'lyrics', price: 50 } as any })} />)).toContain('Requesting for:');
-    expect(render(<RenderMessage message={msg({ meta: { type: 'EMBEDS', sub_type: 'POST' } as any })} />)).toContain('Shared a post');
+    // EMBEDS fetches the entity via services.fetchEmbed; with nothing cached it shows a loading placeholder.
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'EMBEDS', sub_type: 'POST', entity_id: 'p1' } as any })} />)).toContain('Loading embed');
     // NEW-PAYMENT is a card rendered "Media unlocked" (matches agency NewPayment).
     expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'NEW-PAYMENT' } as any })} />)).toContain('Media unlocked');
   });

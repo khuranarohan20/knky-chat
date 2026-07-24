@@ -40,7 +40,6 @@ export {
   RatingRequest,
   CustomRequest,
   JoinCallBtn,
-  ChatEmbeds,
   NewPayment,
   RequestTip,
   ChatUnlock,
@@ -48,3 +47,4 @@ export {
   SetPrice,
   TagApproval,
 } from './messages/bubbles/service-bubbles';
+export { ChatEmbeds } from './messages/bubbles/ChatEmbeds';

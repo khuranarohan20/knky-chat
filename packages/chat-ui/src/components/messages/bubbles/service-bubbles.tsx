@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Tag } from 'lucide-react';
+import { BadgeCheck, Gift, LockOpen, Tag } from 'lucide-react';
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { InfoBubble } from './InfoBubble';
@@ -290,25 +290,7 @@ export function JoinCallBtn({ message, isMine }: CardProps): React.ReactElement 
   );
 }
 
-const EMBED_LABEL: Record<string, string> = {
-  POST: 'Shared a post',
-  PRODUCT: 'Shared a product',
-  CHANNEL: 'Shared a channel',
-  GROUP: 'Shared a group',
-  VAULT: 'Shared from vault',
-};
-
-/** EMBEDS — post / product / channel / group card. */
-export function ChatEmbeds({ message }: BubbleProps): React.ReactElement {
-  const sub = message.meta?.sub_type;
-  return (
-    <InfoBubble
-      icon={<LinkIcon className="size-4" />}
-      title={(sub && EMBED_LABEL[sub]) || 'Shared content'}
-      subtitle={message.meta?.title || message.message || undefined}
-    />
-  );
-}
+// EMBEDS bubble lives in ./ChatEmbeds (fetches + caches the entity).
 
 /** NEW-PAYMENT — media unlocked notice (ported verbatim as a card). */
 export function NewPayment({ message, isMine }: CardProps): React.ReactElement {

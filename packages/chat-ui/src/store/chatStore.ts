@@ -65,6 +65,10 @@ export interface CreatorChatState {
   // Converse members (userId <-> channelId pairs)
   converseMembersList: ConversePair[];
 
+  // Embedded entity cache (post/product/channel/group) for EMBEDS bubbles;
+  // each item carries a `fetch_time` for the 4h TTL.
+  embeds: Array<Record<string, any>>;
+
   // Tabs
   chatTabs: ChatTab[];
   tabCounts: Record<string, ChatListCountInterface>; // tab._id -> count
@@ -158,6 +162,9 @@ export interface ChatStore {
   // Converse members
   setConverseMembersList: (creatorId: string, members: ConversePair[]) => void;
 
+  // Embeds cache (upsert by _id, stamps fetch_time)
+  setEmbed: (creatorId: string, embed: Record<string, any>) => void;
+
   // Tabs
   setChatTabs: (creatorId: string, tabs: ChatTab[]) => void;
   setTabCount: (creatorId: string, tabId: string, count: ChatListCountInterface) => void;
@@ -186,6 +193,7 @@ function initialCreatorState(): CreatorChatState {
     totalUnreadCount: 0,
     unreadChannels: {},
     converseMembersList: [],
+    embeds: [],
     chatTabs: [],
     tabCounts: {},
   };
@@ -625,6 +633,17 @@ export const useChatStore = create<ChatStore>()(
         }),
       ),
 
+    setEmbed: (creatorId, embed) =>
+      set(
+        produce((draft: ChatStore) => {
+          const c = getC(draft, creatorId);
+          const stamped = { ...embed, fetch_time: embed.fetch_time ?? Date.now() };
+          const idx = c.embeds.findIndex((e) => e._id === embed._id);
+          if (idx === -1) c.embeds.push(stamped);
+          else c.embeds[idx] = stamped;
+        }),
+      ),
+
     // ---------------------------------------------------------------------------
     // Tabs
     // ---------------------------------------------------------------------------
@@ -658,6 +677,7 @@ const EMPTY_CHATS: Chat[] = [];
 const EMPTY_MESSAGES: MessageInterface[] = [];
 const EMPTY_PINS: PinnedMessage[] = [];
 const EMPTY_ONLINE: Set<string> = new Set<string>();
+const EMPTY_EMBEDS: Array<Record<string, any>> = [];
 const DEFAULT_FILTER: FilterInterface = {
   readStatus: 'all',
   conversationStatus: 'all',
@@ -701,3 +721,6 @@ export const useTotalUnreadCount = (creatorId: string) =>
 
 export const useOnlineUsers = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.onlineUsers ?? EMPTY_ONLINE);
+
+export const useEmbeds = (creatorId: string) =>
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.embeds ?? EMPTY_EMBEDS);
