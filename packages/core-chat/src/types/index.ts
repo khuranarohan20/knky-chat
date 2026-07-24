@@ -403,6 +403,10 @@ export interface Media {
   type: string;
   width?: number;
   height?: number;
+  path?: string;
+  duration?: number;
+  status?: "Completed" | "Failed" | "Processing" | string;
+  resolution?: { width: number; height: number };
 }
 
 /**

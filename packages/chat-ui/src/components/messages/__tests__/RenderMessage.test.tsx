@@ -4,6 +4,14 @@ import { describe, it, expect } from 'vitest';
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { RenderMessage } from '../RenderMessage';
+import { AdapterProvider } from '../../../adapter/AdapterContext';
+
+// Minimal adapter for context-bound bubbles (media uses useChatConfig).
+const fakeAdapter = {
+  getServices: () => ({ getAssetUrl: ({ media }: { media?: { url?: string } }) => media?.url ?? '' }),
+} as any;
+const renderWithAdapter = (el: React.ReactElement) =>
+  renderToStaticMarkup(<AdapterProvider adapter={fakeAdapter}>{el}</AdapterProvider>);
 
 function msg(p: Partial<MessageInterface>): MessageInterface {
   return {
@@ -50,7 +58,7 @@ describe('RenderMessage', () => {
   });
 
   it('renders media attachments as images', () => {
-    const html = render(
+    const html = renderWithAdapter(
       <RenderMessage
         message={msg({ meta: { type: 'message-attachment', media: [{ _id: 'x', url: 'http://img/1.jpg', type: 'image' }] } as any })}
       />,
@@ -59,8 +67,8 @@ describe('RenderMessage', () => {
     expect(html).toContain('http://img/1.jpg');
   });
 
-  it('shows a locked state (no real src) for pay-to-view media', () => {
-    const html = render(
+  it('shows the PPV lock overlay + unlock price for locked media', () => {
+    const html = renderWithAdapter(
       <RenderMessage
         message={msg({
           meta: {
@@ -72,8 +80,9 @@ describe('RenderMessage', () => {
         })}
       />,
     );
-    expect(html).toContain('$15');
-    expect(html).not.toContain('http://img/1.jpg');
+    expect(html).toContain('$15'); // unlock price
+    expect(html).toContain('/stand-alone-icons/lock.svg'); // lock overlay
+    expect(html).toContain('brightness-[0.6]'); // dimmed preview
   });
 
   it('routes VIDEO/VOICE to a call bubble', () => {

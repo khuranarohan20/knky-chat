@@ -10,7 +10,16 @@ import type { ChatConnection, ConnectionManager } from '@knky-chat/core-chat';
 
 export interface ChatHostServices {
   /** Resolve an asset URL (avatar/media) — host owns the CDN + signing. */
-  getAssetUrl(input: { media?: Media; defaultType?: 'avatar' | 'media' | 'post' }): string;
+  getAssetUrl(input: {
+    media?: Media;
+    defaultType?: 'avatar' | 'media' | 'post' | 'background';
+    /** Image variation, e.g. 'compressed' | 'blur' (for PPV-locked previews). */
+    variation?: string;
+    /** Use the video poster frame. */
+    poster?: boolean;
+  }): string;
+  /** Open the host's fullscreen media viewer. Optional. */
+  openFullscreenMedia?(input: { index: number; mediaUrls: Array<{ url: string; type: 'image' | 'video' }> }): void;
   /** Open a host modal by key (e.g. SET_ALIAS_NAME, DELETE_ENTIRE_CHAT, CREATE_CUSTOM_LIST). */
   openModal?(key: string, payload?: unknown): void;
   /** Permission check (agency); default allow when omitted. */

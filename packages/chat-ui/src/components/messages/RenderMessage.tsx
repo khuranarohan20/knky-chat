@@ -50,12 +50,19 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   const isMine = !!currentUserId && senderId === currentUserId;
   const type = message.meta?.type;
 
+  // Media renders as a standalone card (own container + timestamp), not inside
+  // the text bubble frame — matches the agency MessageAttachment.
+  const isMediaCard = type === 'message-attachment' || type === 'MASS-MESSAGE' || hasMedia(message);
+  if (isMediaCard) {
+    return (
+      <div className={`flex w-full px-3 py-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
+        <MediaAttachment message={message} isMine={isMine} />
+      </div>
+    );
+  }
+
   let content: React.ReactNode;
   switch (type) {
-    case 'message-attachment':
-    case 'MASS-MESSAGE':
-      content = <MediaAttachment message={message} />;
-      break;
     case 'SENT-TIP':
       content = <SentTip message={message} />;
       break;
@@ -97,7 +104,8 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
     case 'direct-message':
     case 'auto-message':
     case undefined:
-      content = hasMedia(message) ? <MediaAttachment message={message} /> : <TextBubble message={message} />;
+      // media already handled above via isMediaCard
+      content = <TextBubble message={message} />;
       break;
     default:
       // stream and any unknown/future type — text or labelled placeholder.
