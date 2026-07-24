@@ -1,12 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from 'lucide-react';
 
 import type { Media, MessageInterface } from '@knky-chat/core-chat';
 import { cn } from '../../../lib/utils';
 import { formatCurrency as money, formatDuration as duration } from '../../../lib/format';
 import { useChatConfig } from '../../../hooks/useChatConfig';
+import { useResolvedCreatorId } from '../../../hooks/useResolvedCreatorId';
 import { Icon } from '../../common/Icon';
 import { BubbleTime } from '../BubbleTime';
+import WaveAudioPlayer from '../../common/WaveAudioPlayer';
+
+const PURCHASE_MEDIA = "You can't buy media on behalf of the creator.";
+// Chat media stored behind the vault needs a signed URL (paths starting with these).
+const VAULT_PREFIXES = ['vault', 'post', 'hls', 'shop', 'chat-media'];
 
 function resolutionLabel(res?: { width: number; height: number }): string {
   return res?.height ? `${res.height}p` : '';
@@ -16,14 +22,15 @@ function resolutionLabel(res?: { width: number; height: number }): string {
  * Media/attachment bubble — ports the agency MessageAttachment: media grid
  * (scroll-snap), PPV blur+lock overlay with image/video counts + total
  * duration, unlock button, unlock fee + paid/pending badge, resolution/
- * duration/video-play badges, standalone card + its own timestamp.
- *
- * Deferred to their exact deps (noted): signed-URL fetch for vault media
- * (uses getAssetUrl for now) and the audio waveform player (native <audio>).
+ * duration/video-play badges, standalone card + its own timestamp. Audio
+ * renders the WaveAudioPlayer; vault-backed media resolves signed URLs via
+ * the host's services.getSignedMediaUrls seam.
  */
 export function MediaAttachment({ message, isMine }: { message: MessageInterface; isMine: boolean }): React.ReactElement {
-  const { getAssetUrl, openFullscreenMedia, toast } = useChatConfig();
+  const { getAssetUrl, getSignedMediaUrls, openFullscreenMedia, toast } = useChatConfig();
+  const creatorId = useResolvedCreatorId();
   const [ready, setReady] = useState<Record<number, boolean>>({});
+  const [signed, setSigned] = useState<Record<string, string>>({});
 
   const media = useMemo<Media[]>(() => {
     const m = message.meta?.media as Media | Media[] | undefined;
@@ -37,16 +44,45 @@ export function MediaAttachment({ message, isMine }: { message: MessageInterface
   const videoCount = media.filter((m) => m?.type === 'video').length;
   const totalDuration = media.reduce((a, m) => a + (m?.type === 'video' ? Number(m.duration || 0) : 0), 0);
 
+  // Signed-URL fetch for vault-backed completed media (host owns GetChatSignedUrl).
+  const completedIds = useMemo(
+    () => media.filter((m) => m?.status === 'Completed' && m?.path && VAULT_PREFIXES.some((p) => m.path!.startsWith(p))).map((m) => m._id as string),
+    [media],
+  );
+  const completedKey = completedIds.join(',');
+  useEffect(() => {
+    if (!getSignedMediaUrls || completedIds.length === 0) return;
+    let cancelled = false;
+    getSignedMediaUrls({ mediaIds: completedIds, creatorId })
+      .then((map) => {
+        if (!cancelled && map) setSigned(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [completedKey, creatorId]);
+
+  const needsSigned = (m: Media, removeVideoFilter = false): boolean => {
+    const path = m?.path || '';
+    const isVaultish = VAULT_PREFIXES.some((p) => path.startsWith(p));
+    return (m.type !== 'video' || (!removeVideoFilter && m?.type === 'video')) && isVaultish && (!isMine ? unlocked : true);
+  };
+  const signedUrlFor = (m: Media): string | null => signed[m?._id || ''] || null;
+  const srcFor = (m: Media): string =>
+    needsSigned(m, true) ? signedUrlFor(m) ?? '' : getAssetUrl({ media: m, poster: m?.type === 'video', variation: locked ? 'blur' : 'compressed' });
+
   const cardCls = cn('overflow-hidden rounded-xl shadow max-w-sm', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black');
 
-  // Audio — native player fallback (their WaveAudioPlayer waveform pending).
+  // Audio — waveform player (matches agency WaveAudioPlayer branch).
   if (media.some((m) => m?.type === 'audio')) {
     return (
       <div className={cn(cardCls, 'w-sm p-2')}>
-        <audio controls src={getAssetUrl({ media: media[0] })} className="w-full" />
+        <WaveAudioPlayer url={getAssetUrl({ media: media[0] })} disable={fee > 0 && !unlocked} className="max-w-sm rounded-lg border p-1" />
         {message.message && message.message !== 'Attachment' ? <p className="mt-1 text-sm">{message.message}</p> : null}
         {locked ? (
-          <button className="mt-2 w-full rounded-md bg-primary py-2 text-sm text-primary-foreground" onClick={() => toast?.error?.('Purchase to unlock')}>
+          <button className="mb-2 mt-2 w-full rounded-md bg-primary py-2 text-sm text-primary-foreground" onClick={() => toast?.error?.(PURCHASE_MEDIA)}>
             Unlock for {money(fee)}
           </button>
         ) : null}
@@ -62,7 +98,7 @@ export function MediaAttachment({ message, isMine }: { message: MessageInterface
       index,
       mediaUrls: media
         .filter((m) => m.type === 'image' || m.type === 'video')
-        .map((m) => ({ url: getAssetUrl({ media: m }), type: m.type as 'image' | 'video' })),
+        .map((m) => ({ url: needsSigned(m, false) ? signed[m._id || ''] || '' : getAssetUrl({ media: m, variation: locked ? 'blur' : 'compressed' }), type: m.type as 'image' | 'video' })),
     });
   };
 
@@ -80,12 +116,19 @@ export function MediaAttachment({ message, isMine }: { message: MessageInterface
                 Processing and moderating your media
                 <Loader className="animate-spin" />
               </div>
+            ) : needsSigned(m, true) && !signedUrlFor(m) ? (
+              <div className="h-[350px] w-full animate-pulse bg-black/10" />
             ) : (
               <img
-                src={getAssetUrl({ media: m, poster: m?.type === 'video', variation: locked ? 'blur' : 'compressed' })}
+                src={srcFor(m)}
                 alt="Media"
                 loading="lazy"
+                decoding="async"
                 onLoad={() => setReady((p) => ({ ...p, [index]: true }))}
+                onError={(e) => {
+                  e.currentTarget.src = '/images/common/defaultBack.svg';
+                  setReady((p) => ({ ...p, [index]: true }));
+                }}
                 onClick={() => fullscreen(index)}
                 className={cn(
                   'h-[350px] w-full object-cover transition-opacity duration-300',

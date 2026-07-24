@@ -37,6 +37,13 @@ export interface ChatHostServices {
     subType?: 'POST' | 'PRODUCT' | 'CHANNEL' | 'GROUP' | 'VAULT' | string;
     creatorId?: string;
   }): Promise<unknown | null>;
+  /**
+   * Resolve signed full URLs for vault-backed chat media (paths starting
+   * vault/post/hls/shop/chat-media). The host owns GetChatSignedUrl; the
+   * library requests once per completed-media set. Returns a map of
+   * mediaId → signed URL. Omit to fall back to getAssetUrl for everything.
+   */
+  getSignedMediaUrls?(input: { mediaIds: string[]; creatorId?: string }): Promise<Record<string, string>>;
 }
 
 // ---------------------------------------------------------------------------
