@@ -407,6 +407,8 @@ export interface Media {
   duration?: number;
   status?: "Completed" | "Failed" | "Processing" | string;
   resolution?: { width: number; height: number };
+  /** Available image variations, e.g. 'compressed' | 'thumbnail' | 'thumb' | 'blur'. */
+  variations?: string[];
 }
 
 /**
@@ -504,6 +506,40 @@ export interface ChatTab {
   is_enabled: boolean;
   _id: string;
   users_count: number;
+}
+
+/**
+ * ChatStats — spend/subscription/notes summary for a fan, shown in the stats
+ * drawer. `activeChannel` carries the current subscription (only the fields
+ * the drawer renders are typed).
+ */
+export interface ChatStatsChannel {
+  package_type: string;
+  is_cancelled?: boolean;
+  expires_on?: string;
+  initial_amount: number;
+  renewal_price?: number;
+  created_at: string;
+}
+
+export interface ChatStatsInterface {
+  total_spend: number;
+  chat_spend: number;
+  notes: string;
+  average_total_spend_per_month: number;
+  average_chat_spend_per_month: number;
+  activeChannel: ChatStatsChannel[];
+  [key: string]: unknown;
+}
+
+/** A user-to-user transaction row in the stats drawer. */
+export interface Transactions {
+  _id: string;
+  total_amount: string | number;
+  category: string;
+  created_at: string;
+  media_thumbnail?: Media[];
+  [key: string]: unknown;
 }
 
 /**

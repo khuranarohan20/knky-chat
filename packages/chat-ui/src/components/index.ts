@@ -10,6 +10,8 @@ export type { ChatListFiltersProps } from './chat/ChatListFilters';
 export { ChatListTabs } from './chat/ChatListTabs';
 export { ChatPerson } from './chat/ChatPerson';
 export type { ChatPersonProps } from './chat/ChatPerson';
+export { ChatStats } from './chat/ChatStats';
+export type { ChatStatsProps } from './chat/ChatStats';
 export { PinnedMessages } from './chat/PinnedMessages';
 export type { PinnedMessagesProps } from './chat/PinnedMessages';
 export { Avatar } from './chat/Avatar';

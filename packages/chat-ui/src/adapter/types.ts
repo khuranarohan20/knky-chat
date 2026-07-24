@@ -1,4 +1,4 @@
-import type { Chat, ConversePair, Media, MessageInterface, MetaInterface } from '@knky-chat/core-chat';
+import type { Chat, ChatStatsInterface, ConversePair, Media, MessageInterface, MetaInterface, Transactions } from '@knky-chat/core-chat';
 import type { SocketEventBridge } from '../bridge/SocketEventBridge';
 import type { ChatConnection, ConnectionManager } from '@knky-chat/core-chat';
 
@@ -93,6 +93,14 @@ export interface IChatApiClient {
     mediaFee?: number;
     replyMessage?: MessageInterface | null;
   }): Promise<void>;
+
+  // Stats drawer (all optional; the drawer only renders when provided).
+  /** Spend/subscription/notes summary for a fan. */
+  getChatStats?(input: { userId: string; creatorId?: string }): Promise<ChatStatsInterface>;
+  /** Persist the free-text notes for a fan. */
+  updateNotes?(input: { userId: string; notes: string; creatorId?: string }): Promise<void>;
+  /** Paginated user↔user transactions for the stats drawer. */
+  getTransactionsBetweenUsers?(input: { targetUserId: string; page?: number; limit?: number; creatorId?: string }): Promise<Transactions[]>;
 }
 
 // ---------------------------------------------------------------------------

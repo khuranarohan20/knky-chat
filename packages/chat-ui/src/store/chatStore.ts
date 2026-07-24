@@ -8,6 +8,7 @@ import type {
   ChatPerson,
   ChatTab,
   ConversePair,
+  ChatStatsInterface,
   FilterInterface,
   Media,
   MessageInterface,
@@ -77,6 +78,9 @@ export interface CreatorChatState {
   // Composer
   replyMessage: { channelId: string; message: MessageInterface } | null;
   template: { message: string; price: number; vault_media_ids: Media[] };
+
+  // Stats drawer
+  activeChatStats: ChatStatsInterface | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -177,6 +181,9 @@ export interface ChatStore {
   // Composer
   setReplyMessage: (creatorId: string, reply: { channelId: string; message: MessageInterface } | null) => void;
   setTemplate: (creatorId: string, template: { message: string; price: number; vault_media_ids: Media[] }) => void;
+
+  // Stats drawer
+  setActiveChatStats: (creatorId: string, stats: ChatStatsInterface | null) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +214,7 @@ function initialCreatorState(): CreatorChatState {
     tabCounts: {},
     replyMessage: null,
     template: { message: '', price: 0, vault_media_ids: [] },
+    activeChatStats: null,
   };
 }
 
@@ -690,6 +698,13 @@ export const useChatStore = create<ChatStore>()(
           getC(draft, creatorId).template = template;
         }),
       ),
+
+    setActiveChatStats: (creatorId, stats) =>
+      set(
+        produce((draft: ChatStore) => {
+          getC(draft, creatorId).activeChatStats = stats;
+        }),
+      ),
   })),
 );
 
@@ -761,3 +776,6 @@ export const useReplyMessage = (creatorId: string) =>
 
 export const useTemplate = (creatorId: string) =>
   useChatStore((s) => s.chatDataByCreator[creatorId]?.template ?? DEFAULT_TEMPLATE);
+
+export const useActiveChatStats = (creatorId: string) =>
+  useChatStore((s) => s.chatDataByCreator[creatorId]?.activeChatStats ?? null);
