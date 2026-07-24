@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Sparkles, Star, Tag } from 'lucide-react';
+import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Sparkles, Tag } from 'lucide-react';
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { InfoBubble } from './InfoBubble';
@@ -8,7 +8,7 @@ import { formatCurrency } from '../../../lib/format';
 import { useChatConfig } from '../../../hooks/useChatConfig';
 import { Icon } from '../../common/Icon';
 import { BubbleTime } from '../BubbleTime';
-import { AudioSent, VideoSent } from '../svg';
+import { AudioSent, RatingSent, RatingStars, VideoSent } from '../svg';
 
 type BubbleProps = { message: MessageInterface };
 /** Card bubbles render standalone (own container + timestamp) and need "me/them". */
@@ -83,16 +83,85 @@ export function VideoVoiceBubble({ message, isMine }: CardProps): React.ReactEle
   );
 }
 
-/** RATING request. */
-export function RatingRequest({ message }: BubbleProps): React.ReactElement {
-  const stars = message.meta?.stars;
+/** RATING request — sent/accepted/declined/completed card (ported verbatim). */
+export function RatingRequest({ message, isMine }: CardProps): React.ReactElement {
+  const { getAssetUrl, openModal, hasPermission, toast } = useChatConfig();
+  const meta = message?.meta;
+  const accept = meta?.requestAccept;
+  const media = Array.isArray(meta?.media) ? meta?.media : meta?.media ? [meta.media] : [];
+  const price = formatCurrency(meta?.price || 0);
+  const canRespond = hasPermission ? hasPermission('MESSAGE') : true;
+
+  const Header = () => (
+    <div className="flex items-center gap-2 px-2">
+      <RatingSent />
+      <div>
+        <div className="font-bold">Ratings</div>
+        <div className="flex gap-2">
+          <div>1 turn</div>
+          <div className="border-l border-gray-300" />
+          <div>Price: {price}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const badge = (label: string, color: string, bg: string) => (
+    <div className="absolute right-0 top-0 m-1">
+      <div className="rounded border p-1 text-sm" style={{ color, borderColor: color, backgroundColor: bg }}>
+        {label}
+      </div>
+    </div>
+  );
+
   return (
-    <InfoBubble
-      icon={<Star className="size-4" />}
-      title="Rating request"
-      subtitle={message.meta?.rateText || message.message || undefined}
-      status={stars ? `${stars}★` : undefined}
-    />
+    <div className={cn('relative w-sm rounded-xl p-1 pt-2', isMine ? 'border bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+      {accept === 'sent' ? badge(isMine ? 'Waiting for creator' : 'New', isMine ? 'rgba(255,168,0,1)' : 'rgba(136,77,255,1)', isMine ? 'rgba(255,168,0,0.12)' : 'rgba(136,77,255,0.2)') : null}
+      {accept === false ? badge('Declined', 'rgba(245,34,45,1)', 'rgba(245,34,45,0.2)') : null}
+      {accept === true ? badge('Completed', 'rgba(86,194,45,1)', 'rgba(86,194,45,0.2)') : null}
+
+      <Header />
+
+      {accept === true ? (
+        <div className="mt-2">
+          {meta?.details ? (
+            <div className="mb-2 flex gap-2 px-2">
+              <span className="font-bold text-gray-500">Message:</span>
+              <span className="whitespace-pre-wrap break-words">{meta.details}</span>
+            </div>
+          ) : null}
+          {media.length > 0 ? (
+            <div className="flex snap-x snap-mandatory gap-1 overflow-x-auto px-2">
+              {media.map((m, i) => (
+                <img key={m?._id || i} src={getAssetUrl({ media: m, poster: m?.type === 'video' })} alt="" className="max-h-[400px] w-full shrink-0 snap-start cursor-pointer object-cover" />
+              ))}
+            </div>
+          ) : null}
+          <div className="my-2 flex gap-2 px-2">
+            {Array.from({ length: meta?.stars || 0 }).map((_, i) => (
+              <RatingStars key={i} />
+            ))}
+          </div>
+          {meta?.rateText ? <div className="px-2 text-lg font-bold">{meta.rateText}</div> : null}
+        </div>
+      ) : null}
+
+      {!isMine && accept === 'sent' && canRespond ? (
+        <div className="my-2 flex flex-col justify-center gap-3 px-2 lg:flex-row">
+          <button
+            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground"
+            onClick={() => openModal?.('RATE_REQUEST', { message })}
+          >
+            Accept for {price}
+          </button>
+          <button className="rounded-md border py-2 text-sm font-medium" onClick={() => toast?.success?.('Request rejected')}>
+            Decline
+          </button>
+        </div>
+      ) : null}
+
+      <BubbleTime message={message} isMine={isMine} />
+    </div>
   );
 }
 

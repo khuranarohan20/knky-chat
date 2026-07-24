@@ -24,6 +24,15 @@ export const AudioSent = (): React.ReactElement => (
   </svg>
 );
 
+export const RatingStars = (): React.ReactElement => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M27.9057 11.486L20.713 10.3911L17.495 3.56151C16.9317 2.36882 15.0685 2.36882 14.5052 3.56151L11.2889 10.3911L4.0945 11.486C2.73296 11.6938 2.18134 13.454 3.17125 14.4668L8.37745 19.7824L7.14923 27.2895C6.91758 28.711 8.34412 29.8024 9.56734 29.1301L16.0001 25.5869L22.4345 29.1318C23.6477 29.7971 25.0859 28.7232 24.8526 27.2913L23.6244 19.7841L28.8306 14.4686C29.8189 13.454 29.2672 11.6938 27.9057 11.486Z"
+      fill="#FFB800"
+    />
+  </svg>
+);
+
 export const RatingSent = (): React.ReactElement => (
   <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="72" height="72" rx="8" fill="#E9F7FF" />

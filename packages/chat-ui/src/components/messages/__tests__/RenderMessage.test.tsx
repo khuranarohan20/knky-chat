@@ -91,7 +91,7 @@ describe('RenderMessage', () => {
   });
 
   it('routes RATING / CUSTOM-SERVICE / EMBEDS / NEW-PAYMENT', () => {
-    expect(render(<RenderMessage message={msg({ meta: { type: 'RATING' } as any })} />)).toContain('Rating request');
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'RATING' } as any })} />)).toContain('Ratings');
     expect(render(<RenderMessage message={msg({ meta: { type: 'CUSTOM-SERVICE', request_note: 'lyrics', price: 50 } as any })} />)).toContain('Custom request');
     expect(render(<RenderMessage message={msg({ meta: { type: 'EMBEDS', sub_type: 'POST' } as any })} />)).toContain('Shared a post');
     // NEW-PAYMENT is a card rendered "Media unlocked" (matches agency NewPayment).
