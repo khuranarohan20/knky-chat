@@ -16,6 +16,12 @@ export interface ChatListProps {
   className?: string;
   /** Show the search box + read-status filters (default true). */
   showFilters?: boolean;
+  /**
+   * The logged-in participant's id, used to pick the OTHER participant to show
+   * per row. Agency: the creator id (default). Core: the logged-in user id
+   * (the creatorId there is the "__core__" sentinel, which matches nobody).
+   */
+  selfId?: string;
 }
 
 /**
@@ -23,8 +29,9 @@ export interface ChatListProps {
  * Clicking a row opens the chat (connect + load history + set header target
  * via useShowChat).
  */
-export function ChatList({ creatorId, className, showFilters = true }: ChatListProps): React.ReactElement {
+export function ChatList({ creatorId, className, showFilters = true, selfId }: ChatListProps): React.ReactElement {
   const { chatList, activeChannelId, filter, creatorId: id } = useChat(creatorId);
+  const self = selfId ?? id;
   const loading = useChatListLoading(id);
   const onlineUsers = useOnlineUsers(id);
   const { getAssetUrl } = useChatConfig();
@@ -60,7 +67,7 @@ export function ChatList({ creatorId, className, showFilters = true }: ChatListP
           <p className="p-4 text-sm text-muted-foreground">No chats</p>
         ) : (
           visible.map((chat) => {
-            const person = otherParticipant(chat, id);
+            const person = otherParticipant(chat, self);
             return (
               <ChatPerson
                 key={chat.converse_channel_id}
