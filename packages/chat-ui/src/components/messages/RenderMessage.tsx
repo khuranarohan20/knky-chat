@@ -70,15 +70,14 @@ export function RenderMessage({ message, currentUserId }: RenderMessageProps): R
   if (type === 'story-reply') {
     return alignWrap(<StoryReply message={message} isMine={isMine} />);
   }
+  if (type === 'VIDEO' || type === 'VOICE') {
+    return alignWrap(<VideoVoiceBubble message={message} isMine={isMine} />);
+  }
 
   let content: React.ReactNode;
   switch (type) {
     case 'REQUEST-TIP':
       content = <RequestTip message={message} />;
-      break;
-    case 'VIDEO':
-    case 'VOICE':
-      content = <VideoVoiceBubble message={message} />;
       break;
     case 'RATING':
       content = <RatingRequest message={message} />;

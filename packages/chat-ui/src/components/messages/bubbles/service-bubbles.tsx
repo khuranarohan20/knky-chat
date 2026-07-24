@@ -1,19 +1,10 @@
 import React from 'react';
-import {
-  BadgeCheck,
-  Gift,
-  Link as LinkIcon,
-  LockOpen,
-  Phone,
-  Sparkles,
-  Star,
-  Tag,
-  Video,
-} from 'lucide-react';
+import { BadgeCheck, Gift, Link as LinkIcon, LockOpen, Sparkles, Star, Tag } from 'lucide-react';
 
 import type { MessageInterface } from '@knky-chat/core-chat';
 import { InfoBubble } from './InfoBubble';
 import { cn } from '../../../lib/utils';
+import { formatCurrency } from '../../../lib/format';
 import { useChatConfig } from '../../../hooks/useChatConfig';
 import { Icon } from '../../common/Icon';
 import { BubbleTime } from '../BubbleTime';
@@ -23,18 +14,72 @@ type BubbleProps = { message: MessageInterface };
 /** Card bubbles render standalone (own container + timestamp) and need "me/them". */
 type CardProps = { message: MessageInterface; isMine: boolean };
 
-/** VIDEO / VOICE call request. */
-export function VideoVoiceBubble({ message }: BubbleProps): React.ReactElement {
-  const isVideo = message.meta?.type === 'VIDEO';
-  const duration = message.meta?.duration;
-  const price = message.meta?.price ?? message.meta?.amount;
+/** VIDEO / VOICE call request — card handling both sent (me) + received (them). */
+export function VideoVoiceBubble({ message, isMine }: CardProps): React.ReactElement {
+  const { getAssetUrl, toast } = useChatConfig();
+  const isVoice = message?.meta?.type === 'VOICE';
+  const isVideoOrVoice = message?.meta?.type === 'VIDEO' || isVoice;
+  const isRequestSent = message?.meta?.requestAccept === 'sent';
+  const isAccepted = !!(message?.meta?.requestAccept || message?.meta?.paid);
+  const reqIcon = (message?.meta?.request_icon as any)?.[0];
+  const price = formatCurrency(message?.meta?.price || 0);
+  const mins = message?.meta?.duration ? Math.ceil(message.meta.duration / 60) : 0;
+
   return (
-    <InfoBubble
-      icon={isVideo ? <Video className="size-4" /> : <Phone className="size-4" />}
-      title={isVideo ? 'Video call' : 'Voice call'}
-      subtitle={duration ? `${duration}s` : undefined}
-      amount={price}
-    />
+    <div className={cn('relative w-sm rounded-xl border p-1', isMine ? 'bg-white text-black' : 'bg-[#f5f5f6] text-black')}>
+      {message?.meta?.free_service ? (
+        <div className="absolute left-0 top-0 z-10 m-2 rounded-md bg-secondary px-2 py-1 text-white">Free Service</div>
+      ) : null}
+      <div className="absolute right-0 top-0 m-2">
+        {isVideoOrVoice && !isRequestSent ? (
+          <div className={cn('rounded border px-2 py-1 text-xs text-white', isAccepted ? 'border-green-500 bg-green-500' : 'border-red-500 bg-red-500')}>
+            {isAccepted ? 'Accepted' : 'Declined'}
+          </div>
+        ) : null}
+        {isRequestSent ? (
+          isMine ? (
+            <div className="rounded border border-orange-500 bg-orange-500 px-2 py-1 text-xs text-white">Waiting for creator</div>
+          ) : (
+            <div className="rounded border border-purple-500 bg-purple-200 px-2 py-1 text-xs text-purple-600">New</div>
+          )
+        ) : null}
+      </div>
+      <div className="flex items-center gap-2 p-2">
+        <div className="flex items-center justify-center">
+          {reqIcon ? (
+            <img src={getAssetUrl({ media: reqIcon })} alt="" className="size-[72px] rounded object-cover" />
+          ) : isVoice ? (
+            <AudioSent />
+          ) : (
+            <VideoSent />
+          )}
+        </div>
+        <div className="flex flex-col items-start">
+          <div className="font-bold">{isVoice ? 'Voice Call' : 'Video Call'}</div>
+          {message?.meta?.duration ? (
+            <div className="flex items-center gap-1 text-sm">
+              <span>For {mins} mins</span>
+              <div className="h-4 w-px bg-black opacity-50" />
+              <span>Price: {price}</span>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      {!isMine && isRequestSent && isVideoOrVoice ? (
+        <div className="mt-2 flex flex-col gap-3 p-2 lg:flex-row">
+          <button
+            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground lg:w-auto"
+            onClick={() => toast?.error?.("You can't accept a call on behalf of the creator.")}
+          >
+            Accept with {price}
+          </button>
+          <button className="w-full rounded-md border py-2 text-sm font-medium lg:w-auto" onClick={() => toast?.error?.('Declined')}>
+            Decline
+          </button>
+        </div>
+      ) : null}
+      <BubbleTime message={message} isMine={isMine} />
+    </div>
   );
 }
 

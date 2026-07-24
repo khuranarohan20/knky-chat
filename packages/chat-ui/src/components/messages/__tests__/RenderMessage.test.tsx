@@ -85,9 +85,9 @@ describe('RenderMessage', () => {
     expect(html).toContain('brightness-[0.6]'); // dimmed preview
   });
 
-  it('routes VIDEO/VOICE to a call bubble', () => {
-    expect(render(<RenderMessage message={msg({ meta: { type: 'VIDEO', price: 30 } as any })} />)).toContain('Video call');
-    expect(render(<RenderMessage message={msg({ meta: { type: 'VOICE' } as any })} />)).toContain('Voice call');
+  it('routes VIDEO/VOICE to a call card', () => {
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'VIDEO', price: 30 } as any })} />)).toContain('Video Call');
+    expect(renderWithAdapter(<RenderMessage message={msg({ meta: { type: 'VOICE' } as any })} />)).toContain('Voice Call');
   });
 
   it('routes RATING / CUSTOM-SERVICE / EMBEDS / NEW-PAYMENT', () => {
